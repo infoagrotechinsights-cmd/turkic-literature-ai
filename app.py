@@ -25,43 +25,33 @@ st.set_page_config(
     layout="wide"
 )
 
-# =========================
-# HEADER
-# =========================
 st.title("📚 PoetryGPT – Turkic Literature AI")
 
 st.markdown("""
-AI-powered academic literary research system for:
+AI-powered Digital Humanities system for:
 
 - Turkic Literature
-- Azerbaijani Poetry
 - Ottoman Poetry
-- Persian Literary Influence
+- Persian Influence Mapping
 - Intertextuality Analysis
-- Academic RAG Research
+- Academic RAG Engine
+- Literary Knowledge Graph
 """)
 
 
 # =========================
-# POEM INPUT
+# INPUT
 # =========================
-poem = st.text_area(
-    "✍️ Enter Poem",
-    height=220
-)
+poem = st.text_area("✍️ Enter a poem", height=200)
 
 mode = st.selectbox(
     "🎯 Analysis Mode",
-    [
-        "academic",
-        "intertextuality",
-        "thesis"
-    ]
+    ["academic", "intertextuality", "thesis"]
 )
 
 
 # =========================
-# ANALYZE POEM
+# ANALYSIS ENGINE
 # =========================
 if st.button("🚀 Analyze Poem"):
 
@@ -69,27 +59,15 @@ if st.button("🚀 Analyze Poem"):
         st.warning("Please enter a poem.")
         st.stop()
 
-    with st.spinner("Analyzing poem..."):
+    prompt = build_prompt(poem, mode)
 
-        prompt = build_prompt(poem, mode)
+    result = ask_gpt(prompt)
 
-        result = ask_gpt(prompt)
+    st.subheader("🧠 AI Analysis")
+    st.write(result)
 
-        st.subheader("🧠 AI Analysis")
-
-        st.write(result)
-
-        citations = format_citations("Anonymous")
-
-        st.subheader("📚 Citations")
-
-        st.text(citations)
-
-        st.subheader("🔗 Intertextuality")
-
-        st.info(
-            "Motif detection and cultural mapping active."
-        )
+    st.subheader("📚 Citations")
+    st.text(format_citations("Anonymous"))
 
 
 # =========================
@@ -104,12 +82,9 @@ if st.button("🌐 Show Intertext Graph"):
     G = build_intertext_graph(poem)
 
     if len(G.nodes) == 0:
-
-        st.warning("No intertextual connections found.")
-
+        st.warning("No intertextual links found.")
     else:
-
-        fig, ax = plt.subplots(figsize=(10, 7))
+        fig, ax = plt.subplots(figsize=(10, 6))
 
         pos = nx.spring_layout(G, seed=42)
 
@@ -125,7 +100,7 @@ if st.button("🌐 Show Intertext Graph"):
 
 
 # =========================
-# PDF THESIS EXPORT
+# THESIS PDF EXPORT
 # =========================
 if st.button("📄 Generate Thesis PDF"):
 
@@ -133,29 +108,23 @@ if st.button("📄 Generate Thesis PDF"):
         st.warning("Please enter a poem.")
         st.stop()
 
-    with st.spinner("Generating thesis PDF..."):
+    analysis = ask_gpt(build_prompt(poem, "thesis"))
+    citations = format_citations("Anonymous")
 
-        prompt = build_prompt(poem, "thesis")
+    pdf_file = create_thesis_pdf(
+        poem=poem,
+        analysis=analysis,
+        citations=citations
+    )
 
-        analysis = ask_gpt(prompt)
+    st.success("Thesis PDF generated!")
 
-        citations = format_citations("Anonymous")
-
-        pdf_file = create_thesis_pdf(
-            poem=poem,
-            analysis=analysis,
-            citations=citations
+    with open(pdf_file, "rb") as f:
+        st.download_button(
+            "⬇ Download PDF",
+            f,
+            file_name="poetry_thesis.pdf"
         )
-
-        st.success("PDF generated successfully!")
-
-        with open(pdf_file, "rb") as f:
-
-            st.download_button(
-                "⬇ Download Thesis PDF",
-                f,
-                file_name="poetry_thesis.pdf"
-            )
 
 
 # =========================
@@ -165,51 +134,43 @@ st.divider()
 
 st.header("📚 Academic RAG System")
 
-query = st.text_input(
-    "Ask about Turkic poetry"
-)
+query = st.text_input("Ask about Turkic poetry")
 
 
-# =========================
+# -------------------------
 # RAG SEARCH
-# =========================
+# -------------------------
 if st.button("🔎 RAG Search"):
 
     if not query:
-        st.warning("Please enter a question.")
+        st.warning("Enter a question.")
         st.stop()
 
-    with st.spinner("Searching academic corpus..."):
+    result = rag_answer(query)
 
-        result = rag_answer(query)
-
-        st.subheader("📖 Academic Answer")
-
-        st.write(result)
+    st.subheader("📖 Academic Answer")
+    st.write(result)
 
 
-# =========================
+# -------------------------
 # LITERATURE REVIEW
-# =========================
-if st.button("📚 Generate Literature Review"):
+# -------------------------
+if st.button("📚 Literature Review"):
 
     if not query:
-        st.warning("Please enter a topic.")
+        st.warning("Enter a topic.")
         st.stop()
 
-    with st.spinner("Generating literature review..."):
+    review = generate_review(query)
 
-        review = generate_review(query)
-
-        st.subheader("🧠 Literature Review")
-
-        st.write(review)
+    st.subheader("🧠 Literature Review")
+    st.write(review)
 
 
-# =========================
+# -------------------------
 # INFLUENCE TIMELINE
-# =========================
-if st.button("📈 Show Influence Timeline"):
+# -------------------------
+if st.button("📈 Influence Timeline"):
 
     data = build_timeline()
 
@@ -237,15 +198,14 @@ st.sidebar.title("ℹ️ About")
 
 st.sidebar.info(
 """
-PoetryGPT is an AI-powered literary research platform.
+PoetryGPT – Digital Humanities AI System
 
 Features:
-- Academic Analysis
-- Intertextuality Graph
-- Thesis PDF Generator
-- Academic RAG
-- Literature Review Generator
-- Influence Timeline
-- Turkic + Persian Literary Mapping
+✔ Academic Analysis
+✔ Intertext Graph
+✔ Thesis PDF Export
+✔ RAG Engine (safe mode)
+✔ Literature Review Generator
+✔ Influence Timeline
 """
 )
