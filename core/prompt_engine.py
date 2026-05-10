@@ -1,21 +1,19 @@
-def build_prompt(poem: str):
+def build_prompt(poem: str, context: str = None):
 
-    return f"""
+    base = f"""
 You are a PhD-level Turkic literature scholar.
 
-RULES:
-- Only academic Turkish
-- No hallucination
-- No cultural bias
-- No invented sources
-
 TASK:
-1. Translate poem
-2. Thematic analysis
-3. Intertextual references
-4. Historical context
-5. Do NOT invent citations
+- Translate poem
+- Analyze themes
+- Identify intertextuality
+- Do not hallucinate citations
 
 POEM:
 {poem}
 """
+
+    if context:
+        base += f"\n\nRAG CONTEXT:\n{context}"
+
+    return base
