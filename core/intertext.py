@@ -1,15 +1,9 @@
-# core/intertext.py
-
 def find_intertext(poem: str):
-    """
-    Simple intertext detection placeholder
-    """
+    keywords = ["kapı", "baykuş", "nur", "sarp"]
 
-    keywords = ["sarp", "kapı", "baykuş", "nur"]
+    found = []
+    for k in keywords:
+        if k in poem.lower():
+            found.append({"term": k, "type": "motif"})
 
-    found = [k for k in keywords if k in poem.lower()]
-
-    return [
-        {"term": f"intertext:{k}", "confidence": 0.7}
-        for k in found
-    ]
+    return found
