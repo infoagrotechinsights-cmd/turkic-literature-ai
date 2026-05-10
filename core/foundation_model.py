@@ -1,24 +1,34 @@
-from core.llm_engine import ask_gpt
+from core.language_detector import detect_language
+from core.motif_engine import extract_motifs
+from core.intertext import find_intertext
+from core.alignment_engine import align_poem
+from core.crossref_client import search_crossref
+from core.citation_verifier import verify_citations
 
-def analyze_poem_multilingual(text):
 
-    prompt = f"""
-Sen Turkic Literature Foundation Model'sin.
+def foundation_reasoning(poem):
 
-Görev:
-1. Azerice/Türkçe/Farsça metni çöz
-2. Modern Türkçeye çevir
-3. Akademik analiz üret
-4. Şairler arası etkileri çıkar
+    # 1. Language detection
+    lang = detect_language(poem)
 
-Metin:
-{text}
+    # 2. Motif extraction
+    motifs = extract_motifs(poem)
 
-Çıktı:
-- Çeviri
-- Tematik analiz
-- Tarihsel bağlam
-- Metinlerarasılık
-"""
+    # 3. Intertext graph candidates
+    intertext = find_intertext(poem)
 
-    return ask_gpt(prompt)
+    # 4. Cross-language alignment
+    alignment = align_poem(poem)
+
+    # 5. Academic grounding
+    raw_citations = search_crossref(poem)
+    citations = verify_citations(raw_citations)
+
+    # 6. Unified reasoning output
+    return {
+        "language": lang,
+        "motifs": motifs,
+        "intertext": intertext,
+        "alignment": alignment,
+        "citations": citations
+    }
