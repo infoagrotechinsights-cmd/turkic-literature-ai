@@ -1,26 +1,30 @@
 import networkx as nx
 
-def build_intertext_graph(poem):
+def build_intertext_graph(center_poem, related_poems):
 
     G = nx.Graph()
 
-    # Basit motif sözlüğü (MVP)
-    motif_map = {
-        "bayqush": ["Şehriyar", "exile motif"],
-        "kafes": ["political oppression", "freedom"],
-        "nur": ["Sufism", "Ibn Arabi"],
-        "qelb": ["love poetry", "Fuzuli"]
-    }
+    # merkez node
+    G.add_node("CENTER", label="Original Poem", type="source")
 
-    for motif, links in motif_map.items():
-        if motif in poem.lower():
+    for i, p in enumerate(related_poems):
 
-            for link in links:
+        node_id = f"P{i}"
 
-                if link in ["Şehriyar", "Fuzuli", "Yunus Emre"]:
-                    G.add_edge("Poem", link)
-                else:
-                    G.add_edge("Poem", link)
-                    G.add_edge(link, "Concept")
+        # node
+        G.add_node(
+            node_id,
+            label=p["author"],
+            score=p["score"],
+            motifs=",".join(p.get("motifs", []))
+        )
+
+        # edge (KRİTİK UPGRADE)
+        G.add_edge(
+            "CENTER",
+            node_id,
+            weight=p["score"],
+            relation=p["type"]
+        )
 
     return G
