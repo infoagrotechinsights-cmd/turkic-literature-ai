@@ -1,6 +1,7 @@
 def build_prompt(poem, context=None, citations=None):
+
     prompt = f"""
-You are a PhD-level Turkic literature AI.
+You are a PhD-level Turkic literature analyst.
 
 POEM:
 {poem}
