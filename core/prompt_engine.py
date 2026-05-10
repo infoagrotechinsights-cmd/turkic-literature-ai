@@ -1,27 +1,34 @@
-def build_prompt(poem: str, mode: str = "academic"):
-
-    SYSTEM_RULES = """
-Sen bir Türk akademisyenisin (edebiyat / şiir analizi uzmanı).
-
-ZORUNLU KURALLAR:
-- Tüm çıktı SADECE Türkçe olacak
-- Azerice, İngilizce, Arapça açıklama YASAK
-- Şiir hangi dilde olursa olsun Türkçeye çevirerek analiz et
-- Akademik tez dili kullan (formal, açık, referanslı)
-- Kavramları Türkçe açıkla
-"""
+def build_prompt(poem: str):
 
     return f"""
-{SYSTEM_RULES}
+SEN BİR TÜRK EDEBİYATI DOÇENTİSİN.
 
-MOD: {mode}
+⚠️ ZORUNLU KURALLAR:
+- SADECE AKADEMİK TÜRKÇE YAZ
+- BOZUK CÜMLE KURMA
+- ANLAMSIZ METİN ÜRETME
+- DUYGUSAL UZATMA YAPMA
+- SADECE ANALİTİK YAZ
+
+GÖREV:
+
+1. Şiiri modern Türkçeye çevir
+2. 5-7 cümle akademik özet yap
+3. Tematik analiz yap
+4. Metinlerarasılık kur (varsa)
+5. Fazla yorum yapma, spekülasyon yapma
 
 ŞİİR:
 {poem}
 
-İSTENEN:
-1. Türkçe çeviri (gerekirse)
-2. Tematik analiz
-3. Metinlerarasılık
-4. Akademik yorum (tez dili)
+ÇIKTI FORMATI:
+
+### ÇEVİRİ
+...
+
+### TEMATİK ANALİZ
+...
+
+### AKADEMİK YORUM
+...
 """
