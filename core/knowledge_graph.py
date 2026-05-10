@@ -1,17 +1,74 @@
+# core/knowledge_graph.py
+
 import networkx as nx
 
-def build_graph(similar_poems):
+
+def build_knowledge_graph(intertexts):
 
     G = nx.Graph()
 
-    G.add_node("INPUT_POEM")
+    # CENTRAL NODE
+    G.add_node(
+        "Poem",
+        type="main"
+    )
 
-    for i, poem in enumerate(similar_poems):
+    for item in intertexts:
 
-        node = f"POEM_{i}"
+        keyword = item["keyword"]
 
-        G.add_node(node)
+        theory = item["theory"]
 
-        G.add_edge("INPUT_POEM", node)
+        tradition = item["tradition"]
+
+        # =====================
+        # MAIN CONNECTIONS
+        # =====================
+
+        G.add_node(
+            keyword,
+            type="motif"
+        )
+
+        G.add_edge(
+            "Poem",
+            keyword
+        )
+
+        G.add_node(
+            theory,
+            type="theory"
+        )
+
+        G.add_edge(
+            keyword,
+            theory
+        )
+
+        G.add_node(
+            tradition,
+            type="tradition"
+        )
+
+        G.add_edge(
+            keyword,
+            tradition
+        )
+
+        # =====================
+        # AUTHORS
+        # =====================
+
+        for author in item["related_authors"]:
+
+            G.add_node(
+                author,
+                type="author"
+            )
+
+            G.add_edge(
+                keyword,
+                author
+            )
 
     return G
