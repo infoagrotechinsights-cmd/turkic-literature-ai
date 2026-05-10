@@ -1,44 +1,27 @@
-def build_prompt(poem, mode="academic"):
+def build_prompt(poem: str, mode: str = "academic"):
 
-    base_prompts = {
+    SYSTEM_RULES = """
+Sen bir Türk akademisyenisin (edebiyat / şiir analizi uzmanı).
 
-        "academic": """
-You are a PhD-level literature scholar.
-Analyze the poem academically.
-
-Focus:
-- themes
-- symbols
-- cultural context
-- literary devices
-- historical background
-""",
-
-        "intertextuality": """
-Detect intertextual references in Turkic literature.
-Compare with:
-- Fuzuli
-- Nazim Hikmet
-- Şehriyar
-- Yunus Emre
-- Persian poetic tradition
-""",
-
-        "thesis": """
-Write as a PhD thesis section:
-
-Include:
-- introduction
-- theoretical framework
-- analysis
-- conclusion
-- academic tone
+ZORUNLU KURALLAR:
+- Tüm çıktı SADECE Türkçe olacak
+- Azerice, İngilizce, Arapça açıklama YASAK
+- Şiir hangi dilde olursa olsun Türkçeye çevirerek analiz et
+- Akademik tez dili kullan (formal, açık, referanslı)
+- Kavramları Türkçe açıkla
 """
-    }
 
     return f"""
-{base_prompts.get(mode)}
+{SYSTEM_RULES}
 
-POEM:
+MOD: {mode}
+
+ŞİİR:
 {poem}
+
+İSTENEN:
+1. Türkçe çeviri (gerekirse)
+2. Tematik analiz
+3. Metinlerarasılık
+4. Akademik yorum (tez dili)
 """
