@@ -1,5 +1,12 @@
-from core.foundation_model import analyze_poem_multilingual
+from core.crossref_client import search_crossref
 
 def rag_answer(query):
 
-    return analyze_poem_multilingual(query)
+    sources = search_crossref(query)
+
+    response = {
+        "analysis_query": query,
+        "real_sources": sources
+    }
+
+    return response
