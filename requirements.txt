@@ -8,3 +8,5 @@ numpy
 pandas
 plotly
 reportlab
+networkx
+matplotlib
