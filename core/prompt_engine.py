@@ -1,19 +1,35 @@
-def build_prompt(poem: str, context: str = None):
+def build_prompt(poem, context=None, citations=None):
 
-    base = f"""
+    prompt = f"""
 You are a PhD-level Turkic literature scholar.
 
+RULES (CRITICAL):
+- Do NOT invent citations
+- Only use VERIFIED SOURCES provided
+- If no citation exists, say "no verified academic source found"
+
 TASK:
-- Translate poem
-- Analyze themes
-- Identify intertextuality
-- Do not hallucinate citations
+1. Translate poem
+2. Thematic analysis
+3. Intertextuality
+4. Historical context
 
 POEM:
 {poem}
 """
 
     if context:
-        base += f"\n\nRAG CONTEXT:\n{context}"
+        prompt += f"""
 
-    return base
+RAG CONTEXT:
+{context}
+"""
+
+    if citations:
+        prompt += f"""
+
+VERIFIED ACADEMIC SOURCES (DO NOT MODIFY):
+{citations}
+"""
+
+    return prompt
