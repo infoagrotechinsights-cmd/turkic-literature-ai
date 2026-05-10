@@ -10,3 +10,4 @@ plotly
 reportlab
 networkx
 matplotlib
+chromadb
