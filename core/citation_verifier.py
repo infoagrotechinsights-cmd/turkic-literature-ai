@@ -1,14 +1,20 @@
+from core.crossref_client import search_crossref
+
 def verify_citations(text):
 
-    references = []
+    results = search_crossref(text, limit=3)
 
-    if "Levinas" in text:
-        references.append("Levinas (2002). Totality and Infinity.")
+    verified = []
 
-    if "Camus" in text:
-        references.append("Camus (1942). The Myth of Sisyphus.")
+    for r in results:
 
-    return {
-        "style": "APA 7",
-        "references": references
-    }
+        if r["title"]:
+
+            verified.append(
+                f"{r['title']} ({r['year']}) DOI: {r['doi']}"
+            )
+
+    if not verified:
+        return "❌ GERÇEK KAYNAK BULUNAMADI (HALLÜSİNASYON ENGELLENDİ)"
+
+    return verified
