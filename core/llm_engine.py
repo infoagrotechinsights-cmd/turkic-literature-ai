@@ -8,17 +8,36 @@ client = OpenAI(
     api_key=API_KEY
 )
 
+PRIMARY_MODEL = "meta-llama/llama-3.1-8b-instruct"
+FALLBACK_MODEL = "openai/gpt-4o-mini"
+
+
 def ask_gpt(prompt):
 
     if not API_KEY:
-        return "❌ API KEY NOT FOUND IN STREAMLIT SECRETS"
+        return "❌ API KEY MISSING"
 
-    response = client.chat.completions.create(
-        model="mistralai/mistral-7b-instruct",
-        messages=[
-            {"role": "system", "content": "You are a poetry analysis expert."},
-            {"role": "user", "content": prompt}
-        ]
-    )
+    try:
+        response = client.chat.completions.create(
+            model=PRIMARY_MODEL,
+            messages=[
+                {"role": "system", "content": "You are a Turkic literature PhD analyst."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return response.choices[0].message.content
 
-    return response.choices[0].message.content
+    except Exception as e:
+
+        try:
+            response = client.chat.completions.create(
+                model=FALLBACK_MODEL,
+                messages=[
+                    {"role": "system", "content": "Fallback academic assistant."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response.choices[0].message.content
+
+        except Exception as e2:
+            return f"❌ MODEL ERROR:\n{str(e2)}"
