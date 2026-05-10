@@ -1,3 +1,11 @@
+import sys
+import os
+
+# =========================
+# 🔧 CRITICAL FIX: PATH RESOLVER
+# =========================
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import streamlit as st
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -12,7 +20,16 @@ from core.citation_system import format_citations
 from core.rag_engine import rag_answer
 from core.literature_review import generate_review
 from core.influence_timeline import build_timeline
-from viz.graph import build_graph
+
+# =========================
+# SAFE IMPORT (FIX FOR YOUR ERROR)
+# =========================
+try:
+    from viz.graph import build_graph
+except ModuleNotFoundError:
+    import viz.graph as vg
+    build_graph = vg.build_graph
+
 
 from export.pdf_export import create_thesis_pdf
 
@@ -26,17 +43,6 @@ st.set_page_config(
 )
 
 st.title("📚 PoetryGPT – Turkic Literature AI")
-
-st.markdown("""
-AI-powered Digital Humanities system for:
-
-- Turkic Literature
-- Ottoman Poetry
-- Persian Influence Mapping
-- Intertextuality Analysis
-- Academic RAG Engine
-- Literary Knowledge Graph
-""")
 
 
 # =========================
@@ -100,7 +106,7 @@ if st.button("🌐 Show Intertext Graph"):
 
 
 # =========================
-# THESIS PDF EXPORT
+# THESIS PDF
 # =========================
 if st.button("📄 Generate Thesis PDF"):
 
@@ -117,7 +123,7 @@ if st.button("📄 Generate Thesis PDF"):
         citations=citations
     )
 
-    st.success("Thesis PDF generated!")
+    st.success("PDF generated!")
 
     with open(pdf_file, "rb") as f:
         st.download_button(
@@ -131,30 +137,23 @@ if st.button("📄 Generate Thesis PDF"):
 # RAG SYSTEM
 # =========================
 st.divider()
-
 st.header("📚 Academic RAG System")
 
 query = st.text_input("Ask about Turkic poetry")
 
 
-# -------------------------
-# RAG SEARCH
-# -------------------------
 if st.button("🔎 RAG Search"):
 
     if not query:
-        st.warning("Enter a question.")
+        st.warning("Enter a query.")
         st.stop()
 
     result = rag_answer(query)
 
-    st.subheader("📖 Academic Answer")
+    st.subheader("📖 Answer")
     st.write(result)
 
 
-# -------------------------
-# LITERATURE REVIEW
-# -------------------------
 if st.button("📚 Literature Review"):
 
     if not query:
@@ -163,13 +162,10 @@ if st.button("📚 Literature Review"):
 
     review = generate_review(query)
 
-    st.subheader("🧠 Literature Review")
+    st.subheader("🧠 Review")
     st.write(review)
 
 
-# -------------------------
-# INFLUENCE TIMELINE
-# -------------------------
 if st.button("📈 Influence Timeline"):
 
     data = build_timeline()
@@ -200,12 +196,10 @@ st.sidebar.info(
 """
 PoetryGPT – Digital Humanities AI System
 
-Features:
-✔ Academic Analysis
-✔ Intertext Graph
-✔ Thesis PDF Export
-✔ RAG Engine (safe mode)
-✔ Literature Review Generator
-✔ Influence Timeline
+✔ RAG Engine  
+✔ Intertext Graph  
+✔ Thesis Generator  
+✔ Literature Review AI  
+✔ Influence Timeline  
 """
 )
