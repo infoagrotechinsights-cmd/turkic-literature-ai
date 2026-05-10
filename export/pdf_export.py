@@ -2,41 +2,27 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
 
-def create_thesis_pdf(poem: str, analysis: str, citations: str):
+def create_thesis_pdf(thesis, filename="thesis.pdf"):
 
-    file_path = "thesis_output.pdf"
-    doc = SimpleDocTemplate(file_path)
-
+    doc = SimpleDocTemplate(filename)
     styles = getSampleStyleSheet()
 
-    story = []
+    content = []
 
-    # =========================
-    # 📘 TITLE
-    # =========================
-    story.append(Paragraph("Turkic Literature AI – Thesis Report", styles["Title"]))
-    story.append(Spacer(1, 12))
+    content.append(Paragraph(thesis["title"], styles["Title"]))
+    content.append(Spacer(1, 12))
 
-    # =========================
-    # 📜 POEM
-    # =========================
-    story.append(Paragraph("<b>Şiir:</b>", styles["Heading2"]))
-    story.append(Paragraph(poem, styles["Normal"]))
-    story.append(Spacer(1, 12))
+    content.append(Paragraph("Abstract", styles["Heading2"]))
+    content.append(Paragraph(thesis["abstract"], styles["BodyText"]))
+    content.append(Spacer(1, 12))
 
-    # =========================
-    # 🧠 ANALYSIS
-    # =========================
-    story.append(Paragraph("<b>Akademik Analiz:</b>", styles["Heading2"]))
-    story.append(Paragraph(analysis, styles["Normal"]))
-    story.append(Spacer(1, 12))
+    content.append(Paragraph("Introduction", styles["Heading2"]))
+    content.append(Paragraph(thesis["introduction"], styles["BodyText"]))
+    content.append(Spacer(1, 12))
 
-    # =========================
-    # 📚 CITATIONS
-    # =========================
-    story.append(Paragraph("<b>Kaynakça:</b>", styles["Heading2"]))
-    story.append(Paragraph(str(citations), styles["Normal"]))
+    content.append(Paragraph("Analysis", styles["Heading2"]))
+    content.append(Paragraph(str(thesis["analysis"]), styles["BodyText"]))
 
-    doc.build(story)
+    doc.build(content)
 
-    return file_path
+    return filename
