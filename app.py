@@ -2,9 +2,10 @@ import sys
 import os
 
 # =========================
-# 🔧 CRITICAL FIX: PATH RESOLVER
+# 🔧 FIX: PATH RESOLVER (CRITICAL)
 # =========================
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_DIR)
 
 import streamlit as st
 import matplotlib.pyplot as plt
@@ -22,20 +23,15 @@ from core.literature_review import generate_review
 from core.influence_timeline import build_timeline
 
 # =========================
-# SAFE IMPORT (FIX FOR YOUR ERROR)
+# SAFE VIZ IMPORT (NO CRASH)
 # =========================
-try:
-    from viz.graph import build_graph
-except ModuleNotFoundError:
-    import viz.graph as vg
-    build_graph = vg.build_graph
-
+from viz.graph import build_graph
 
 from export.pdf_export import create_thesis_pdf
 
 
 # =========================
-# PAGE CONFIG
+# UI
 # =========================
 st.set_page_config(
     page_title="PoetryGPT - Turkic Literature AI",
@@ -44,29 +40,24 @@ st.set_page_config(
 
 st.title("📚 PoetryGPT – Turkic Literature AI")
 
-
-# =========================
-# INPUT
-# =========================
 poem = st.text_area("✍️ Enter a poem", height=200)
 
 mode = st.selectbox(
-    "🎯 Analysis Mode",
+    "Analysis Mode",
     ["academic", "intertextuality", "thesis"]
 )
 
 
 # =========================
-# ANALYSIS ENGINE
+# ANALYSIS
 # =========================
 if st.button("🚀 Analyze Poem"):
 
     if not poem:
-        st.warning("Please enter a poem.")
+        st.warning("Enter a poem.")
         st.stop()
 
     prompt = build_prompt(poem, mode)
-
     result = ask_gpt(prompt)
 
     st.subheader("🧠 AI Analysis")
@@ -81,14 +72,10 @@ if st.button("🚀 Analyze Poem"):
 # =========================
 if st.button("🌐 Show Intertext Graph"):
 
-    if not poem:
-        st.warning("Please enter a poem.")
-        st.stop()
-
     G = build_intertext_graph(poem)
 
     if len(G.nodes) == 0:
-        st.warning("No intertextual links found.")
+        st.warning("No links found.")
     else:
         fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -110,26 +97,19 @@ if st.button("🌐 Show Intertext Graph"):
 # =========================
 if st.button("📄 Generate Thesis PDF"):
 
-    if not poem:
-        st.warning("Please enter a poem.")
-        st.stop()
-
     analysis = ask_gpt(build_prompt(poem, "thesis"))
-    citations = format_citations("Anonymous")
 
     pdf_file = create_thesis_pdf(
         poem=poem,
         analysis=analysis,
-        citations=citations
+        citations=format_citations("Anonymous")
     )
-
-    st.success("PDF generated!")
 
     with open(pdf_file, "rb") as f:
         st.download_button(
             "⬇ Download PDF",
             f,
-            file_name="poetry_thesis.pdf"
+            file_name="thesis.pdf"
         )
 
 
@@ -143,46 +123,23 @@ query = st.text_input("Ask about Turkic poetry")
 
 
 if st.button("🔎 RAG Search"):
-
-    if not query:
-        st.warning("Enter a query.")
-        st.stop()
-
-    result = rag_answer(query)
-
-    st.subheader("📖 Answer")
-    st.write(result)
+    st.write(rag_answer(query))
 
 
 if st.button("📚 Literature Review"):
-
-    if not query:
-        st.warning("Enter a topic.")
-        st.stop()
-
-    review = generate_review(query)
-
-    st.subheader("🧠 Review")
-    st.write(review)
+    st.write(generate_review(query))
 
 
 if st.button("📈 Influence Timeline"):
 
     data = build_timeline()
-
     G = build_graph(data)
 
     fig, ax = plt.subplots(figsize=(12, 7))
 
     pos = nx.spring_layout(G, seed=42)
 
-    nx.draw(
-        G,
-        pos,
-        with_labels=True,
-        node_size=3500,
-        font_size=10
-    )
+    nx.draw(G, pos, with_labels=True, node_size=3000)
 
     st.pyplot(fig)
 
@@ -190,16 +147,14 @@ if st.button("📈 Influence Timeline"):
 # =========================
 # SIDEBAR
 # =========================
-st.sidebar.title("ℹ️ About")
-
 st.sidebar.info(
 """
-PoetryGPT – Digital Humanities AI System
+PoetryGPT AI System:
 
 ✔ RAG Engine  
 ✔ Intertext Graph  
 ✔ Thesis Generator  
-✔ Literature Review AI  
+✔ Literature Review  
 ✔ Influence Timeline  
 """
 )
