@@ -1,20 +1,31 @@
-from core.crossref_client import search_crossref
-
-def verify_citations(text):
-
-    results = search_crossref(text, limit=3)
+def verify_citations(citations):
+    """
+    Sadece gerçek DOI olanları geçirir.
+    Fake / boş / hallucinated kaynakları siler.
+    """
 
     verified = []
 
-    for r in results:
+    for c in citations:
 
-        if r["title"]:
+        if not isinstance(c, dict):
+            continue
 
-            verified.append(
-                f"{r['title']} ({r['year']}) DOI: {r['doi']}"
-            )
+        doi = c.get("doi", None)
+        title = c.get("title", "")
 
-    if not verified:
-        return "❌ GERÇEK KAYNAK BULUNAMADI (HALLÜSİNASYON ENGELLENDİ)"
+        # 🚨 kritik filter
+        if not doi:
+            continue
+
+        if len(title) < 5:
+            continue
+
+        verified.append({
+            "title": title,
+            "doi": doi,
+            "year": c.get("year"),
+            "authors": c.get("authors", [])
+        })
 
     return verified
