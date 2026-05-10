@@ -11,3 +11,4 @@ reportlab
 networkx
 matplotlib
 chromadb
+requests
