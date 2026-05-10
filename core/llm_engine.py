@@ -1,16 +1,20 @@
+import streamlit as st
 from openai import OpenAI
-import os
 
 client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
+    base_url="https://openrouter.ai/api/v1",
+    api_key=st.secrets["OPENROUTER_API_KEY"]
 )
 
 def ask_gpt(prompt):
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="openai/gpt-4o-mini",
         messages=[
-            {"role":"user","content":prompt}
+            {
+                "role": "user",
+                "content": prompt
+            }
         ]
     )
 
