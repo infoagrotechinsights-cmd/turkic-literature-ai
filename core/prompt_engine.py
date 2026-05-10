@@ -1,34 +1,21 @@
 def build_prompt(poem: str):
 
     return f"""
-SEN BİR TÜRK EDEBİYATI DOÇENTİSİN.
+You are a PhD-level Turkic literature scholar.
 
-⚠️ ZORUNLU KURALLAR:
-- SADECE AKADEMİK TÜRKÇE YAZ
-- BOZUK CÜMLE KURMA
-- ANLAMSIZ METİN ÜRETME
-- DUYGUSAL UZATMA YAPMA
-- SADECE ANALİTİK YAZ
+RULES:
+- Only academic Turkish
+- No hallucination
+- No cultural bias
+- No invented sources
 
-GÖREV:
+TASK:
+1. Translate poem
+2. Thematic analysis
+3. Intertextual references
+4. Historical context
+5. Do NOT invent citations
 
-1. Şiiri modern Türkçeye çevir
-2. 5-7 cümle akademik özet yap
-3. Tematik analiz yap
-4. Metinlerarasılık kur (varsa)
-5. Fazla yorum yapma, spekülasyon yapma
-
-ŞİİR:
+POEM:
 {poem}
-
-ÇIKTI FORMATI:
-
-### ÇEVİRİ
-...
-
-### TEMATİK ANALİZ
-...
-
-### AKADEMİK YORUM
-...
 """
