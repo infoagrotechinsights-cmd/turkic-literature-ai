@@ -1,42 +1,43 @@
-from core.llm_engine import ask_gpt
+from core.embeddings import embed_text
+from core.vector_db import search_vectors
+from core.similarity import cosine_similarity
+from core.motif_engine import extract_motifs
 
 
-def align_poetry(text: str, mode: str = "academic"):
-    """
-    Multilingual Poetry Alignment Engine
-    - Farsça / Azerice / Türkçe metni çözer
-    - Türkçeye çevirir
-    - akademik analiz üretir
-    """
+LANG_PRIORITY = ["az", "tr", "fa"]
 
-    prompt = f"""
-Sen Türk akademik edebiyat uzmanısın.
+def align_poem(poem, target_languages=["tr", "fa"], top_k=5):
 
-GÖREVİN:
-Aşağıdaki şiiri analiz et ve SADECE TÜRKÇE yaz.
+    query_vec = embed_text(poem)
+    query_motifs = extract_motifs(poem)
 
-ZORUNLU ADIMLAR:
-1. Metni diline bakmadan Türkçeye çevir
-2. Anlam katmanlarını çıkar
-3. Şairin duygusal yapısını analiz et
-4. Metinlerarasılık kur
-5. Tarihsel / kültürel bağlam ver
+    aligned_results = []
 
-EK KURALLAR:
-- Azerice, Farsça, İngilizce KULLANMA
-- sadece akademik Türkçe
-- tez formatına uygun yaz
+    for lang in target_languages:
 
-MOD: {mode}
+        results = search_vectors(
+            query_vec,
+            top_k=top_k,
+            filter_lang=lang
+        )
 
-ŞİİR:
-{text}
+        for r in results:
 
-ÇIKTI:
-- Türkçe çeviri
-- Tematik analiz
-- Sembolik çözümleme
-- Akademik yorum
-"""
+            score = cosine_similarity(query_vec, r["vector"])
+            motifs = extract_motifs(r["text"])
 
-    return ask_gpt(prompt)
+            shared_motifs = len(
+                set([m["term"] for m in motifs]) &
+                set([m["term"] for m in query_motifs])
+            )
+
+            aligned_results.append({
+                "language": lang,
+                "text": r["text"],
+                "author": r.get("author", "unknown"),
+                "score": float(score),
+                "shared_motifs": shared_motifs,
+                "alignment_score": float(score + shared_motifs * 0.15)
+            })
+
+    return sorted(aligned_results, key=lambda x: x["alignment_score"], reverse=True)
