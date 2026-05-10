@@ -1,8 +1,8 @@
 import chromadb
-from core.embeddings import get_embedding
+from core.embeddings import embed
 
 client = chromadb.PersistentClient(path="db/chroma")
-collection = client.get_or_create_collection("poems")
+collection = client.get_or_create_collection("poetry")
 
 def add_poem(id, text, metadata=None):
 
