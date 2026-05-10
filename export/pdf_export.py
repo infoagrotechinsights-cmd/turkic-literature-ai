@@ -1,56 +1,19 @@
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 
-def create_thesis_pdf(poem, analysis, citations, filename="thesis.pdf"):
+def create_journal_pdf(title, abstract, analysis, citations):
 
-    doc = SimpleDocTemplate(filename)
+    file_path = "academic_paper.pdf"
+    doc = SimpleDocTemplate(file_path)
+
     styles = getSampleStyleSheet()
+    story = []
 
-    content = []
+    story.append(Paragraph(title, styles["Title"]))
+    story.append(Paragraph("Abstract: " + abstract, styles["Normal"]))
+    story.append(Paragraph("Analysis: " + analysis, styles["Normal"]))
+    story.append(Paragraph("References: " + str(citations), styles["Normal"]))
 
-    # TITLE
-    content.append(Paragraph("AI-Generated Literary Thesis", styles["Title"]))
-    content.append(Spacer(1, 12))
+    doc.build(story)
 
-    # ABSTRACT
-    abstract = f"""
-    This study presents an AI-assisted literary analysis of a Turkic poem.
-    The analysis is generated using computational literary methods.
-    """
-    content.append(Paragraph("ABSTRACT", styles["Heading2"]))
-    content.append(Paragraph(abstract, styles["Normal"]))
-    content.append(Spacer(1, 12))
-
-    # KEYWORDS
-    keywords = "Turkic Literature, Poetry Analysis, NLP, Intertextuality, Digital Humanities"
-    content.append(Paragraph("KEYWORDS", styles["Heading2"]))
-    content.append(Paragraph(keywords, styles["Normal"]))
-    content.append(Spacer(1, 12))
-
-    # POEM
-    content.append(Paragraph("POEM", styles["Heading2"]))
-    content.append(Paragraph(poem, styles["Normal"]))
-    content.append(Spacer(1, 12))
-
-    # ANALYSIS
-    content.append(Paragraph("ANALYSIS", styles["Heading2"]))
-    content.append(Paragraph(analysis, styles["Normal"]))
-    content.append(Spacer(1, 12))
-
-    # CITATIONS
-    content.append(Paragraph("CITATIONS", styles["Heading2"]))
-    content.append(Paragraph(citations, styles["Normal"]))
-    content.append(Spacer(1, 12))
-
-    # REFERENCES
-    references = """
-    - Journal of Turkic Studies (2024)
-    - Digital Humanities Quarterly (2023)
-    - Comparative Literature Review (2022)
-    """
-    content.append(Paragraph("REFERENCES", styles["Heading2"]))
-    content.append(Paragraph(references, styles["Normal"]))
-
-    doc.build(content)
-
-    return filename
+    return file_path
