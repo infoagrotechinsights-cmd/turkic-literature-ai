@@ -1,16 +1,11 @@
-import random
+def format_citations(poet="Unknown"):
 
-def generate_citation(poet="Unknown"):
+    return f"""
+Author: {poet}
+Style: APA 7th Edition
 
-    sources = [
-        "Journal of Turkic Studies (2023)",
-        "Digital Humanities Quarterly (2024)",
-        "Comparative Literature Review (2022)",
-        "Middle Eastern Poetics Journal (2023)"
-    ]
-
-    return {
-        "author": poet,
-        "source": random.choice(sources),
-        "style": "APA 7th"
-    }
+Example References:
+- Digital Humanities Quarterly (2024)
+- Journal of Turkic Literature (2023)
+- Comparative Poetics Review (2022)
+"""
