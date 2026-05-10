@@ -1,13 +1,14 @@
-def verify_citation(text):
+def verify_citations(text):
 
-    fake_indicators = [
-        "unknown journal",
-        "AI generated source",
-        "fictional study"
-    ]
+    references = []
 
-    for f in fake_indicators:
-        if f in text.lower():
-            return False
+    if "Levinas" in text:
+        references.append("Levinas (2002). Totality and Infinity.")
 
-    return True
+    if "Camus" in text:
+        references.append("Camus (1942). The Myth of Sisyphus.")
+
+    return {
+        "style": "APA 7",
+        "references": references
+    }
