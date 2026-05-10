@@ -1,13 +1,16 @@
-from pyvis.network import Network
+import networkx as nx
 
-def render_graph(G):
+def build_graph(data):
 
-    net = Network(height="600px", width="100%", bgcolor="#0e1117", font_color="white")
+    G = nx.Graph()
 
-    net.from_nx(G)
+    for item in data:
 
-    net.repulsion()
+        poet = item.get("poet", "Unknown")
+        influence = item.get("influence", "Unknown")
 
-    net.save_graph("graph.html")
+        G.add_node(poet)
+        G.add_node(influence)
+        G.add_edge(poet, influence)
 
-    return "graph.html"
+    return G
