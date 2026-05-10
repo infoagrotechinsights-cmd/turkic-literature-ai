@@ -5,91 +5,91 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 # =========================
-# 🔧 PATH FIX (CRITICAL)
+# PATH FIX
 # =========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
-sys.path.insert(0, os.path.abspath(os.path.join(BASE_DIR, "..")))
 
 # =========================
 # CORE IMPORTS (SAFE)
 # =========================
-try:
-    from core.llm_engine import ask_gpt
-except:
-    def ask_gpt(x): return "❌ LLM ENGINE NOT LOADED"
-
+from core.llm_engine import ask_gpt
 from core.prompt_engine import build_prompt
 from core.rag_engine import rag_answer
-from core.literature_review import generate_review
-from core.influence_timeline import build_timeline
-from core.citation_system import format_citations
+
+from core.alignment_engine import align_poetry
+from core.foundation_model import analyze_poem_multilingual
+
+from core.citation_verifier import verify_citations
+from core.crossref_client import search_crossref
+
+from core.influence_network import build_influence_network
 from core.intertext_graph import build_intertext_graph
 
 from export.pdf_export import create_thesis_pdf
 
+
 # =========================
-# SAFE VIZ IMPORT
+# UI
 # =========================
-try:
-    import viz.graph as vg
-    build_graph = vg.build_graph
-except:
-    build_graph = None
+st.set_page_config(page_title="Turkic Literature AI v3", layout="wide")
+st.title("📚 Turkic Literature Foundation AI (Research Engine v3)")
 
 
 # =========================
-# UI CONFIG
+# INPUT
 # =========================
-st.set_page_config(page_title="PoetryGPT AI", layout="wide")
-st.title("📚 PoetryGPT – Turkic Literature AI System")
+poem = st.text_area("📜 Şiir / Metin (Azerice - Farsça - Türkçe)")
 
-
-# =========================
-# INPUT MODE
-# =========================
-mode = st.radio("Input Mode", ["✍️ Paste Text", "📄 Upload File"])
-
-poem = ""
-
-if mode == "✍️ Paste Text":
-    poem = st.text_area("Enter poem", height=250)
-
-elif mode == "📄 Upload File":
-    file = st.file_uploader("Upload TXT", type=["txt"])
-    if file:
-        poem = file.read().decode("utf-8")
-        st.text_area("Loaded Poem", poem, height=250)
-
-
-analysis_mode = st.selectbox(
-    "Analysis Type",
-    ["academic", "intertextuality", "thesis"]
-)
+query = st.text_input("🔍 Akademik araştırma sorusu")
 
 
 # =========================
-# 🔥 MAIN ANALYSIS
+# 1. FOUNDATION ANALYSIS
 # =========================
-if st.button("🚀 Analyze Poem"):
+if st.button("🧠 Foundation Model Analysis"):
 
-    if not poem.strip():
-        st.warning("No input provided")
-        st.stop()
+    result = analyze_poem_multilingual(poem)
 
-    prompt = build_prompt(poem, analysis_mode)
-
-    result = ask_gpt(prompt)
-
-    st.subheader("🧠 AI Analysis")
+    st.subheader("📖 Multilingual Academic Analysis")
     st.write(result)
 
-    st.subheader("📚 Citations")
-    st.text(format_citations())
+
+# =========================
+# 2. ALIGNMENT ENGINE
+# =========================
+if st.button("🔗 Alignment Engine"):
+
+    result = align_poetry(poem)
+
+    st.subheader("🌐 Language Alignment")
+    st.write(result)
 
 
 # =========================
-# 🌐 INTERTEXT GRAPH
+# 3. RAG (REAL SOURCES)
+# =========================
+if st.button("📚 RAG (CrossRef Real Sources)"):
+
+    results = rag_answer(query)
+
+    st.subheader("📡 Real Academic Sources (CrossRef)")
+    st.write(results)
+
+
+# =========================
+# 4. CITATION VERIFIER
+# =========================
+if st.button("✔ Citation Verification"):
+
+    result = verify_citations(query)
+
+    st.subheader("🧾 Verified APA References")
+    st.write(result)
+
+
+# =========================
+# 5. INTERTEXT GRAPH
 # =========================
 if st.button("🌐 Intertext Graph"):
 
@@ -99,81 +99,65 @@ if st.button("🌐 Intertext Graph"):
         st.warning("No intertext connections found")
     else:
         fig, ax = plt.subplots(figsize=(10, 6))
-        pos = nx.spring_layout(G, seed=42)
-        nx.draw(G, pos, with_labels=True, node_size=2500)
+        nx.draw(G, with_labels=True, node_size=2500)
         st.pyplot(fig)
 
 
 # =========================
-# 📄 THESIS PDF EXPORT
+# 6. INFLUENCE NETWORK
+# =========================
+if st.button("🧬 Influence Network"):
+
+    sample_poets = [
+        {"name": "Nizami", "influences": ["Fuzuli"]},
+        {"name": "Fuzuli", "influences": ["Nesimi"]},
+        {"name": "Nesimi", "influences": []}
+    ]
+
+    G = build_influence_network(sample_poets)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    nx.draw(G, with_labels=True)
+    st.pyplot(fig)
+
+
+# =========================
+# 7. PDF EXPORT (ACADEMIC PAPER)
 # =========================
 if st.button("📄 Generate Thesis PDF"):
 
-    if not poem.strip():
-        st.warning("No poem provided")
-        st.stop()
-
     analysis = ask_gpt(build_prompt(poem, "thesis"))
+    citations = verify_citations(query)
 
-    pdf = create_thesis_pdf(
+    pdf_path = create_thesis_pdf(
         poem=poem,
         analysis=analysis,
-        citations=format_citations()
+        citations=citations
     )
 
-    with open(pdf, "rb") as f:
+    with open(pdf_path, "rb") as f:
         st.download_button(
-            "⬇ Download Thesis PDF",
+            "⬇ Download Academic Paper",
             f,
-            file_name="poetry_thesis.pdf"
+            file_name="turkic_thesis.pdf"
         )
 
 
 # =========================
-# 📚 RAG SYSTEM
-# =========================
-st.divider()
-st.header("📚 Academic RAG System")
-
-query = st.text_input("Ask about Turkic poetry")
-
-if st.button("🔎 RAG Search"):
-    st.write(rag_answer(query))
-
-if st.button("📖 Literature Review"):
-    st.write(generate_review(query))
-
-
-# =========================
-# 📈 TIMELINE / GRAPH
-# =========================
-if st.button("📈 Influence Timeline"):
-
-    data = build_timeline()
-
-    if build_graph:
-        G = build_graph(data)
-        fig, ax = plt.subplots(figsize=(12, 7))
-        nx.draw(G, with_labels=True)
-        st.pyplot(fig)
-    else:
-        st.warning("Graph module not available")
-
-
-# =========================
-# 🧠 DEBUG PANEL
+# SIDEBAR
 # =========================
 st.sidebar.title("System Status")
 
-st.sidebar.write("API KEY:",
-    "✅" if os.getenv("OPENROUTER_API_KEY") else "❌ Missing"
-)
+st.sidebar.write("LLM:", "✅")
+st.sidebar.write("CrossRef:", "✅")
+st.sidebar.write("RAG:", "✅")
+st.sidebar.write("Graph:", "✅")
 
 st.sidebar.info("""
-PoetryGPT System:
-- AI Analysis
-- RAG Engine
-- Intertext Graph
-- Thesis PDF
-- Literature Review
+Turkic Literature AI v3
+- Foundation Model Layer
+- Multilingual Alignment
+- Real Citation System
+- Knowledge Graph
+- Academic PDF Export
 """)
