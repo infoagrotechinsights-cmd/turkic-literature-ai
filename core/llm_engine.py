@@ -1,67 +1,179 @@
 import os
+import sys
 import streamlit as st
-from openai import OpenAI
+import matplotlib.pyplot as plt
+import networkx as nx
 
 # =========================
-# 🔑 FORCE KEY RESOLUTION
+# 🔧 PATH FIX (CRITICAL)
 # =========================
-def get_api_key():
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_DIR)
+sys.path.insert(0, os.path.abspath(os.path.join(BASE_DIR, "..")))
 
-    # 1. Streamlit secrets
-    if hasattr(st, "secrets") and "OPENROUTER_API_KEY" in st.secrets:
-        return st.secrets["OPENROUTER_API_KEY"]
+# =========================
+# CORE IMPORTS (SAFE)
+# =========================
+try:
+    from core.llm_engine import ask_gpt
+except:
+    def ask_gpt(x): return "❌ LLM ENGINE NOT LOADED"
 
-    # 2. ENV
-    key = os.environ.get("OPENROUTER_API_KEY")
-    if key:
-        return key
+from core.prompt_engine import build_prompt
+from core.rag_engine import rag_answer
+from core.literature_review import generate_review
+from core.influence_timeline import build_timeline
+from core.citation_system import format_citations
+from core.intertext_graph import build_intertext_graph
 
-    return None
+from export.pdf_export import create_thesis_pdf
+
+# =========================
+# SAFE VIZ IMPORT
+# =========================
+try:
+    import viz.graph as vg
+    build_graph = vg.build_graph
+except:
+    build_graph = None
 
 
-API_KEY = get_api_key()
+# =========================
+# UI CONFIG
+# =========================
+st.set_page_config(page_title="PoetryGPT AI", layout="wide")
+st.title("📚 PoetryGPT – Turkic Literature AI System")
 
-# 🚨 DEBUG (çok önemli)
-if API_KEY:
-    print("✅ API KEY LOADED")
-else:
-    print("❌ API KEY MISSING")
 
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=API_KEY
+# =========================
+# INPUT MODE
+# =========================
+mode = st.radio("Input Mode", ["✍️ Paste Text", "📄 Upload File"])
+
+poem = ""
+
+if mode == "✍️ Paste Text":
+    poem = st.text_area("Enter poem", height=250)
+
+elif mode == "📄 Upload File":
+    file = st.file_uploader("Upload TXT", type=["txt"])
+    if file:
+        poem = file.read().decode("utf-8")
+        st.text_area("Loaded Poem", poem, height=250)
+
+
+analysis_mode = st.selectbox(
+    "Analysis Type",
+    ["academic", "intertextuality", "thesis"]
 )
 
-PRIMARY_MODEL = "mistralai/mistral-7b-instruct"
-FALLBACK_MODEL = "meta-llama/llama-3.1-8b-instruct"
+
+# =========================
+# 🔥 MAIN ANALYSIS
+# =========================
+if st.button("🚀 Analyze Poem"):
+
+    if not poem.strip():
+        st.warning("No input provided")
+        st.stop()
+
+    prompt = build_prompt(poem, analysis_mode)
+
+    result = ask_gpt(prompt)
+
+    st.subheader("🧠 AI Analysis")
+    st.write(result)
+
+    st.subheader("📚 Citations")
+    st.text(format_citations())
 
 
-def ask_gpt(prompt):
+# =========================
+# 🌐 INTERTEXT GRAPH
+# =========================
+if st.button("🌐 Intertext Graph"):
 
-    if not API_KEY:
-        return "❌ API KEY NOT FOUND (Secrets veya ENV kontrol et)"
+    G = build_intertext_graph(poem)
 
-    try:
-        res = client.chat.completions.create(
-            model=PRIMARY_MODEL,
-            messages=[
-                {"role": "system", "content": "You are a Turkic literature PhD assistant."},
-                {"role": "user", "content": prompt}
-            ]
+    if len(G.nodes) == 0:
+        st.warning("No intertext connections found")
+    else:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        pos = nx.spring_layout(G, seed=42)
+        nx.draw(G, pos, with_labels=True, node_size=2500)
+        st.pyplot(fig)
+
+
+# =========================
+# 📄 THESIS PDF EXPORT
+# =========================
+if st.button("📄 Generate Thesis PDF"):
+
+    if not poem.strip():
+        st.warning("No poem provided")
+        st.stop()
+
+    analysis = ask_gpt(build_prompt(poem, "thesis"))
+
+    pdf = create_thesis_pdf(
+        poem=poem,
+        analysis=analysis,
+        citations=format_citations()
+    )
+
+    with open(pdf, "rb") as f:
+        st.download_button(
+            "⬇ Download Thesis PDF",
+            f,
+            file_name="poetry_thesis.pdf"
         )
-        return res.choices[0].message.content
 
-    except Exception as e:
 
-        try:
-            res = client.chat.completions.create(
-                model=FALLBACK_MODEL,
-                messages=[
-                    {"role": "system", "content": "Fallback academic assistant."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            return res.choices[0].message.content
+# =========================
+# 📚 RAG SYSTEM
+# =========================
+st.divider()
+st.header("📚 Academic RAG System")
 
-        except Exception as e2:
-            return f"❌ BOTH FAILED:\n{str(e2)}"
+query = st.text_input("Ask about Turkic poetry")
+
+if st.button("🔎 RAG Search"):
+    st.write(rag_answer(query))
+
+if st.button("📖 Literature Review"):
+    st.write(generate_review(query))
+
+
+# =========================
+# 📈 TIMELINE / GRAPH
+# =========================
+if st.button("📈 Influence Timeline"):
+
+    data = build_timeline()
+
+    if build_graph:
+        G = build_graph(data)
+        fig, ax = plt.subplots(figsize=(12, 7))
+        nx.draw(G, with_labels=True)
+        st.pyplot(fig)
+    else:
+        st.warning("Graph module not available")
+
+
+# =========================
+# 🧠 DEBUG PANEL
+# =========================
+st.sidebar.title("System Status")
+
+st.sidebar.write("API KEY:",
+    "✅" if os.getenv("OPENROUTER_API_KEY") else "❌ Missing"
+)
+
+st.sidebar.info("""
+PoetryGPT System:
+- AI Analysis
+- RAG Engine
+- Intertext Graph
+- Thesis PDF
+- Literature Review
+""")
