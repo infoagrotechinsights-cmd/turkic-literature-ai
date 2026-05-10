@@ -1,18 +1,13 @@
 def build_prompt(poem, context=None, citations=None):
 
     prompt = f"""
-You are a PhD-level Turkic literature scholar.
-
-RULES (CRITICAL):
-- Do NOT invent citations
-- Only use VERIFIED SOURCES provided
-- If no citation exists, say "no verified academic source found"
+You are a PhD-level computational literature researcher.
 
 TASK:
-1. Translate poem
-2. Thematic analysis
-3. Intertextuality
-4. Historical context
+- Translate poem if needed
+- Perform academic analysis
+- Extract intertextual relations
+- Avoid hallucinated sources
 
 POEM:
 {poem}
@@ -21,15 +16,23 @@ POEM:
     if context:
         prompt += f"""
 
-RAG CONTEXT:
+CONTEXT (RAG + Foundation Model):
 {context}
 """
 
     if citations:
         prompt += f"""
 
-VERIFIED ACADEMIC SOURCES (DO NOT MODIFY):
+VERIFIED ACADEMIC SOURCES (DO NOT MODIFY OR INVENT):
 {citations}
+"""
+
+    prompt += """
+
+RULES:
+- Use only provided citations
+- If citations are empty, explicitly say: "No verified sources found"
+- Maintain academic tone (APA style where applicable)
 """
 
     return prompt
