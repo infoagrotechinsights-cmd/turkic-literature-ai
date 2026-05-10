@@ -1,9 +1,9 @@
 import os
 import sys
 
-# ==================================================
-# 🔧 CRITICAL FIX: FORCE PROJECT ROOT IN PYTHON PATH
-# ==================================================
+# =========================
+# 🔧 CRITICAL PATH FIX
+# =========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
 
@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 # =========================
-# CORE IMPORTS
+# CORE MODULES
 # =========================
 from core.llm_engine import ask_gpt
 from core.prompt_engine import build_prompt
@@ -23,49 +23,76 @@ from core.citation_system import format_citations
 from core.intertext_graph import build_intertext_graph
 
 # =========================
-# SAFE VIZ IMPORT (NO CRASH)
+# SAFE VIZ IMPORT
 # =========================
-try:
-    import viz.graph as vg
-    build_graph = vg.build_graph
-except Exception:
-    build_graph = None
+import viz.graph as vg
+build_graph = vg.build_graph
 
 from export.pdf_export import create_thesis_pdf
 
 
 # =========================
-# UI CONFIG
+# UI
 # =========================
 st.set_page_config(
-    page_title="PoetryGPT – Turkic Literature AI",
+    page_title="PoetryGPT - Turkic Literature AI",
     layout="wide"
 )
 
-st.title("📚 PoetryGPT – Turkic Literature AI")
+st.title("📚 PoetryGPT – AI Poetry Analysis System")
 
 
 # =========================
-# INPUT
+# INPUT MODE
 # =========================
-poem = st.text_area("✍️ Enter a poem", height=200)
+mode = st.radio(
+    "Input Mode",
+    ["✍️ Paste Text", "📄 Upload File"]
+)
 
-mode = st.selectbox(
-    "🎯 Analysis Mode",
+poem = ""
+
+
+# =========================
+# TEXT INPUT
+# =========================
+if mode == "✍️ Paste Text":
+    poem = st.text_area("Enter poem", height=250)
+
+
+# =========================
+# FILE UPLOAD
+# =========================
+elif mode == "📄 Upload File":
+    file = st.file_uploader("Upload poem (.txt)", type=["txt"])
+
+    if file is not None:
+        poem = file.read().decode("utf-8")
+        st.text_area("Loaded Poem", poem, height=250)
+
+
+# =========================
+# ANALYSIS MODE
+# =========================
+analysis_mode = st.selectbox(
+    "Analysis Type",
     ["academic", "intertextuality", "thesis"]
 )
 
 
 # =========================
-# ANALYSIS ENGINE
+# MAIN ANALYSIS
 # =========================
 if st.button("🚀 Analyze Poem"):
 
-    if not poem:
-        st.warning("Please enter a poem.")
+    if not poem.strip():
+        st.warning("Please input or upload a poem.")
         st.stop()
 
-    prompt = build_prompt(poem, mode)
+    st.subheader("📖 Input Poem")
+    st.write(poem)
+
+    prompt = build_prompt(poem, analysis_mode)
     result = ask_gpt(prompt)
 
     st.subheader("🧠 AI Analysis")
@@ -78,12 +105,12 @@ if st.button("🚀 Analyze Poem"):
 # =========================
 # INTERTEXT GRAPH
 # =========================
-if st.button("🌐 Show Intertext Graph"):
+if st.button("🌐 Intertext Graph"):
 
     G = build_intertext_graph(poem)
 
     if len(G.nodes) == 0:
-        st.warning("No intertextual links found.")
+        st.warning("No intertextual connections found.")
     else:
         fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -104,6 +131,10 @@ if st.button("🌐 Show Intertext Graph"):
 # THESIS PDF EXPORT
 # =========================
 if st.button("📄 Generate Thesis PDF"):
+
+    if not poem.strip():
+        st.warning("No poem provided.")
+        st.stop()
 
     analysis = ask_gpt(build_prompt(poem, "thesis"))
 
@@ -129,7 +160,6 @@ st.header("📚 Academic RAG System")
 
 query = st.text_input("Ask about Turkic poetry")
 
-
 if st.button("🔎 RAG Search"):
     st.write(rag_answer(query))
 
@@ -142,11 +172,7 @@ if st.button("📈 Influence Timeline"):
 
     data = build_timeline()
 
-    if build_graph:
-        G = build_graph(data)
-    else:
-        st.warning("Graph module not available.")
-        st.stop()
+    G = build_graph(data)
 
     fig, ax = plt.subplots(figsize=(12, 7))
 
@@ -160,14 +186,15 @@ if st.button("📈 Influence Timeline"):
 # =========================
 # SIDEBAR
 # =========================
-st.sidebar.title("ℹ️ PoetryGPT AI")
+st.sidebar.title("ℹ️ PoetryGPT AI System")
 
 st.sidebar.info(
 """
-✔ RAG Engine  
+✔ Paste / Upload Input  
+✔ AI Poem Analysis  
 ✔ Intertext Graph  
-✔ Thesis Generator  
-✔ Literature Review AI  
-✔ Influence Timeline  
+✔ RAG Engine  
+✔ Literature Review  
+✔ Thesis PDF Export  
 """
 )
