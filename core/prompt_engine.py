@@ -1,29 +1,15 @@
 def build_prompt(poem, context=None, citations=None):
-    
     prompt = f"""
-You are a PhD-level Turkic literature research assistant.
-
-TASK:
-- Academic analysis of poem
-- Intertextual interpretation
-- Thematic extraction
+You are a PhD-level Turkic literature AI.
 
 POEM:
 {poem}
 """
 
     if context:
-        prompt += f"""
-
-CONTEXT:
-{context}
-"""
+        prompt += f"\nCONTEXT:\n{context}\n"
 
     if citations:
-        prompt += f"""
-
-VERIFIED ACADEMIC SOURCES:
-{citations}
-"""
+        prompt += f"\nCITATIONS:\n{citations}\n"
 
     return prompt
