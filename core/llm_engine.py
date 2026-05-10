@@ -1,5 +1,6 @@
 import streamlit as st
 from openai import OpenAI
+from core.prompt_engine import build_prompt
 
 API_KEY = st.secrets.get("OPENROUTER_API_KEY")
 
@@ -8,36 +9,46 @@ client = OpenAI(
     api_key=API_KEY
 )
 
-PRIMARY_MODEL = "meta-llama/llama-3.1-8b-instruct"
-FALLBACK_MODEL = "openai/gpt-4o-mini"
+MODEL_PRIMARY = "meta-llama/llama-3.1-8b-instruct"
+MODEL_FALLBACK = "openai/gpt-4o-mini"
 
 
-def ask_gpt(prompt):
+def ask_gpt(poem, mode="academic"):
 
     if not API_KEY:
         return "❌ API KEY MISSING"
 
+    prompt = build_prompt(poem, mode)
+
     try:
-        response = client.chat.completions.create(
-            model=PRIMARY_MODEL,
+        res = client.chat.completions.create(
+            model=MODEL_PRIMARY,
             messages=[
-                {"role": "system", "content": "You are a Turkic literature PhD analyst."},
-                {"role": "user", "content": prompt}
+                {
+                    "role": "system",
+                    "content": "SADECE TÜRKÇE akademik analiz üret."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
             ]
         )
-        return response.choices[0].message.content
+        return res.choices[0].message.content
 
-    except Exception as e:
+    except Exception:
 
-        try:
-            response = client.chat.completions.create(
-                model=FALLBACK_MODEL,
-                messages=[
-                    {"role": "system", "content": "Fallback academic assistant."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            return response.choices[0].message.content
-
-        except Exception as e2:
-            return f"❌ MODEL ERROR:\n{str(e2)}"
+        res = client.chat.completions.create(
+            model=MODEL_FALLBACK,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Türkçe akademik analiz üret."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+        return res.choices[0].message.content
