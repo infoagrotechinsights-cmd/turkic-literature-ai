@@ -1,43 +1,24 @@
 from core.vector_db import search
 from core.llm_engine import ask_gpt
 
-
 def rag_answer(query):
 
     results = search(query)
 
-    documents = results.get("documents", [[]])
+    docs = results.get("documents", [[]])[0]
 
-    retrieved_docs = documents[0] if documents else []
-
-    context = "\n\n".join(retrieved_docs)
+    context = "\n".join(docs)
 
     prompt = f"""
-You are an expert academic researcher specializing in:
+You are an academic Turkic literature expert.
 
-- Turkic literature
-- Azerbaijani poetry
-- Ottoman poetry
-- Persian literary traditions
-- Digital humanities
-- Intertextuality
-
-Use the academic context below to answer the question.
-
-ACADEMIC CONTEXT:
+Context:
 {context}
 
-QUESTION:
+Question:
 {query}
 
-Instructions:
-- Use academic tone
-- Mention literary traditions
-- Explain historical background
-- Include intertextual observations
-- Be analytical and structured
+Answer in academic style.
 """
 
-    answer = ask_gpt(prompt)
-
-    return answer
+    return ask_gpt(prompt)
