@@ -1,15 +1,15 @@
-def clean_output(text: str):
+def clean(text: str):
 
-    bad_patterns = [
-        "Türk'ümüz gösteriyoruz",
-        "BURA (COLOra",
+    banned = [
+        "COLOra",
         "femeyra",
-        "issinden geçmiş",
-        "aracı kelimelerden biri"
+        "Türk'ümüz",
+        "issinden",
+        "aracı kelimeler"
     ]
 
-    for b in bad_patterns:
+    for b in banned:
         if b in text:
-            return "⚠️ Model çıktısı bozuldu. Lütfen yeniden deneyin."
+            return "⚠️ Model çıktısı bozuldu (filter triggered)"
 
     return text
