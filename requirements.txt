@@ -1,0 +1,9 @@
+streamlit
+openai
+python-dotenv
+langdetect
+sentence-transformers
+scikit-learn
+numpy
+pandas
+plotly
