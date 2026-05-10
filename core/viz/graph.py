@@ -6,8 +6,11 @@ def build_graph(data):
 
     for item in data:
 
-        G.add_node(item["poet"])
-        G.add_node(item["influence"])
-        G.add_edge(item["poet"], item["influence"])
+        poet = item.get("poet", "Unknown")
+        influence = item.get("influence", "Unknown")
+
+        G.add_node(poet)
+        G.add_node(influence)
+        G.add_edge(poet, influence)
 
     return G
