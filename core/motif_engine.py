@@ -1,30 +1,19 @@
-import re
+# core/motif_engine.py
 
-# basit ama genişletilebilir motif ontology
-MOTIF_DICTIONARY = {
-    "kapı": ["threshold", "border", "transition"],
-    "qapı": ["threshold", "border", "transition"],
-    "sarp": ["difficulty", "barrier", "liminality"],
-    "baykuş": ["isolation", "ruin", "melancholy"],
-    "nur": ["light", "divine", "spirituality"],
-    "darlık": ["oppression", "constraint", "existential_pressure"],
-    "sınır": ["border", "political_space", "division"]
-}
+def extract_motifs(poem: str):
+    """
+    Basic motif extractor (stable version)
+    """
 
-def extract_motifs(text):
+    motifs = []
 
-    text_lower = text.lower()
+    if "kapı" in poem.lower():
+        motifs.append({"term": "border / threshold"})
 
-    found = []
+    if "baykuş" in poem.lower():
+        motifs.append({"term": "loneliness / night symbol"})
 
-    for word, categories in MOTIF_DICTIONARY.items():
+    if "nur" in poem.lower():
+        motifs.append({"term": "divine light / mysticism"})
 
-        if word in text_lower:
-
-            found.append({
-                "term": word,
-                "categories": categories,
-                "frequency": len(re.findall(word, text_lower))
-            })
-
-    return found
+    return motifs
