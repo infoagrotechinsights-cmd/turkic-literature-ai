@@ -1,6 +1,12 @@
-from sentence_transformers import SentenceTransformer
+# core/embeddings.py
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+def embed_text(text: str):
+    """
+    Lightweight deterministic embedding (fallback version).
+    Replace later with sentence-transformers or OpenAI embeddings.
+    """
+    if not text:
+        return []
 
-def get_embedding(text: str):
-    return model.encode(text).tolist()
+    # simple stable placeholder embedding
+    return [hash(text) % 10000]
