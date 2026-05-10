@@ -1,28 +1,51 @@
-import chromadb
-from core.embeddings import embed
+# =========================
+# SIMPLE IN-MEMORY VECTOR DB
+# (NO chromadb, NO protobuf issues)
+# =========================
 
-client = chromadb.PersistentClient(path="db/chroma")
-collection = client.get_or_create_collection("poetry")
+db = []
+
 
 def add_poem(id, text, metadata=None):
+    """
+    Add poem to in-memory database
+    """
 
-    emb = get_embedding(text)
-
-    collection.add(
-        ids=[str(id)],
-        embeddings=[emb],
-        documents=[text],
-        metadatas=[metadata or {}]
-    )
+    db.append({
+        "id": id,
+        "text": text,
+        "metadata": metadata or {}
+    })
 
 
-def search_similar(text, k=5):
+def search(query, k=5):
+    """
+    Simple keyword-based retrieval (RAG fallback version)
+    """
 
-    emb = get_embedding(text)
+    if not db:
+        return {"documents": [[]]}
 
-    results = collection.query(
-        query_embeddings=[emb],
-        n_results=k
-    )
+    query_words = set(query.lower().split())
+
+    scored = []
+
+    for item in db:
+
+        text_words = set(item["text"].lower().split())
+
+        # simple overlap score
+        score = len(query_words.intersection(text_words))
+
+        scored.append((score, item["text"]))
+
+    # sort by relevance
+    scored.sort(reverse=True, key=lambda x: x[0])
+
+    top_k = [text for _, text in scored[:k]]
+
+    return {
+        "documents": [top_k]
+    }
 
     return results
