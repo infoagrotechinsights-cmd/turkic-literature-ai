@@ -1,8 +1,24 @@
 import streamlit as st
+from core.analysis_engine import analyze_poem
 
-st.set_page_config(
-    page_title="PoetryGPT",
-    layout="wide"
+st.title("PoetryGPT")
+
+poem = st.text_area("Enter poem")
+
+analysis_type = st.selectbox(
+    "Analysis Type",
+    [
+        "Academic",
+        "Intertextuality",
+        "Symbolic"
+    ]
 )
 
-st.title("PoetryGPT for Turkic Literature")
+if st.button("Analyze"):
+
+    result = analyze_poem(
+        poem,
+        analysis_type
+    )
+
+    st.write(result)
