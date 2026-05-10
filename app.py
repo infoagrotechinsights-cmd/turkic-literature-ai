@@ -1,26 +1,119 @@
 import streamlit as st
+
+# ONLY SAFE IMPORT
 from core.foundation_model import foundation_reasoning
-from core.prompt_engine import build_prompt
 
-st.title("📊 Turkic Literature AI")
+# =========================
+# PAGE CONFIG
+# =========================
 
-poem = st.text_area("Enter poem")
+st.set_page_config(
+    page_title="Turkic Literature AI",
+    layout="wide"
+)
 
-if st.button("Run Analysis"):
+st.title("📚 Turkic Literature AI")
+st.markdown("### Academic Research Cockpit")
 
-    result = foundation_reasoning(poem)
+# =========================
+# INPUT
+# =========================
 
-    st.subheader("Alignment")
-    st.write(result["alignment"])
+poem = st.text_area(
+    "📜 Paste poem or literary text",
+    height=250
+)
 
-    st.subheader("Intertext")
-    st.write(result["intertext"])
+# =========================
+# ANALYSIS BUTTON
+# =========================
 
-    prompt = build_prompt(
-        poem,
-        context=result,
-        citations=result.get("citations", [])
-    )
+if st.button("🚀 Run Analysis"):
 
-    st.subheader("Prompt")
-    st.code(prompt)
+    if not poem.strip():
+        st.warning("Please enter a poem.")
+        st.stop()
+
+    try:
+
+        # =========================
+        # MAIN PIPELINE
+        # =========================
+
+        result = foundation_reasoning(poem)
+
+        st.success("✅ Analysis completed")
+
+        # =========================
+        # ALIGNMENT
+        # =========================
+
+        st.subheader("🔗 Alignment")
+
+        if "alignment" in result:
+            st.json(result["alignment"])
+        else:
+            st.warning("No alignment result.")
+
+        # =========================
+        # INTERTEXT
+        # =========================
+
+        st.subheader("🌐 Intertext Relations")
+
+        if "intertext" in result:
+            st.json(result["intertext"])
+        else:
+            st.warning("No intertext data.")
+
+        # =========================
+        # MOTIFS
+        # =========================
+
+        st.subheader("🧠 Motifs")
+
+        if "motifs" in result:
+            st.json(result["motifs"])
+        else:
+            st.warning("No motif analysis.")
+
+        # =========================
+        # CITATIONS
+        # =========================
+
+        st.subheader("📖 Citations")
+
+        if "citations" in result:
+            st.json(result["citations"])
+        else:
+            st.warning("No citations found.")
+
+    except Exception as e:
+
+        st.error("❌ SYSTEM ERROR")
+        st.code(str(e))
+
+# =========================
+# HEALTH CHECK
+# =========================
+
+st.divider()
+
+if st.button("🧪 System Health Check"):
+
+    checks = {}
+
+    # foundation model
+    try:
+        foundation_reasoning("test")
+        checks["foundation_model"] = "OK"
+    except Exception as e:
+        checks["foundation_model"] = f"ERROR: {e}"
+
+    st.subheader("System Status")
+    st.json(checks)
+
+    if all(v == "OK" for v in checks.values()):
+        st.success("✅ SYSTEM OPERATIONAL")
+    else:
+        st.error("❌ SYSTEM HAS ERRORS")
