@@ -1,31 +1,42 @@
 import requests
 
+CROSSREF_URL = "https://api.crossref.org/works"
+
 def search_crossref(query, limit=5):
+    try:
+        params = {
+            "query": query,
+            "rows": limit
+        }
 
-    url = "https://api.crossref.org/works"
+        r = requests.get(CROSSREF_URL, params=params, timeout=10)
+        data = r.json()
 
-    params = {
-        "query": query,
-        "rows": limit
-    }
+        items = data.get("message", {}).get("items", [])
 
-    r = requests.get(url, params=params)
-    data = r.json()
+        results = []
 
-    results = []
+        for item in items:
+            title = item.get("title", [""])[0]
+            doi = item.get("DOI", None)
+            year = item.get("issued", {}).get("date-parts", [[None]])[0][0]
+            author = item.get("author", [])
 
-    for item in data["message"]["items"]:
+            authors = []
+            for a in author:
+                name = f"{a.get('family','')} {a.get('given','')}"
+                authors.append(name)
 
-        title = item.get("title", [""])[0]
-        authors = item.get("author", [])
-        year = item.get("published-print", {}).get("date-parts", [[None]])[0][0]
+            if doi:
+                results.append({
+                    "title": title,
+                    "doi": doi,
+                    "year": year,
+                    "authors": authors,
+                    "source": "crossref"
+                })
 
-        doi = item.get("DOI", None)
+        return results
 
-        results.append({
-            "title": title,
-            "year": year,
-            "doi": doi
-        })
-
-    return results
+    except Exception as e:
+        return [{"error": str(e)}]
