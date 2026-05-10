@@ -1,16 +1,25 @@
+# viz/graph.py
+
+import matplotlib.pyplot as plt
 import networkx as nx
 
-def build_graph(data):
 
-    G = nx.Graph()
+def draw_graph(G):
 
-    for item in data:
+    fig, ax = plt.subplots(figsize=(12, 8))
 
-        poet = item.get("poet", "Unknown")
-        influence = item.get("influence", "Unknown")
+    pos = nx.spring_layout(
+        G,
+        seed=42
+    )
 
-        G.add_node(poet)
-        G.add_node(influence)
-        G.add_edge(poet, influence)
+    nx.draw(
+        G,
+        pos,
+        with_labels=True,
+        node_size=2500,
+        font_size=9,
+        ax=ax
+    )
 
-    return G
+    return fig
