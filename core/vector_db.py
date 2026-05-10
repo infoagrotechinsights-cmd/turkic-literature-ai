@@ -1,23 +1,22 @@
-db = []
+from sentence_transformers import SentenceTransformer
 
-def add_poem(id, text, metadata=None):
-    db.append({"id": id, "text": text})
+model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
+memory = []
 
-def search(query, k=5):
+def add(text):
+    emb = model.encode(text)
+    memory.append((text, emb))
 
-    if not db:
-        return {"documents": [[]]}
-
-    q = query.lower().split()
+def search(query, top_k=5):
+    q_emb = model.encode(query)
 
     scored = []
 
-    for item in db:
-        text = item["text"].lower()
-        score = sum(1 for w in q if w in text)
-        scored.append((score, item["text"]))
+    for text, emb in memory:
+        score = (q_emb @ emb)
+        scored.append((score, text))
 
-    scored.sort(reverse=True, key=lambda x: x[0])
+    scored.sort(reverse=True)
 
-    return {"documents": [[t for _, t in scored[:k]]] }
+    return [t for _, t in scored[:top_k]]
