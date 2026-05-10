@@ -1,18 +1,26 @@
-def detect_intertext(poem):
+from core.vector_db import search_vectors
+from core.embeddings import embed_text
+from core.similarity import cosine_similarity
 
-    keywords = {
-        "bayqush": ["Şehriyar", "Fuzuli", "symbol of exile"],
-        "kafes": ["freedom", "political oppression"],
-        "nur": ["Sufi poetry", "Ibn Arabi"]
-    }
+def find_intertext(poem, top_k=7):
 
-    results = []
+    query_vec = embed_text(poem)
 
-    for k, v in keywords.items():
-        if k in poem.lower():
-            results.append({
-                "keyword": k,
-                "connections": v
-            })
+    results = search_vectors(query_vec, top_k=top_k)
 
-    return results
+    enriched = []
+
+    for r in results:
+
+        score = cosine_similarity(query_vec, r["vector"])
+
+        enriched.append({
+            "text": r["text"],
+            "author": r.get("author", "unknown"),
+            "language": r.get("language", "unknown"),
+            "score": float(score),
+            "motifs": r.get("motifs", []),
+            "type": "semantic_similarity"
+        })
+
+    return sorted(enriched, key=lambda x: x["score"], reverse=True)
