@@ -1,15 +1,12 @@
 import os
 import sys
 
-# =========================
-# 🔧 CRITICAL FIX: PROJECT ROOT PATH
-# =========================
+# ==================================================
+# 🔧 CRITICAL FIX: FORCE PROJECT ROOT IN PYTHON PATH
+# ==================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
 
-# =========================
-# STREAMLIT
-# =========================
 import streamlit as st
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -26,10 +23,13 @@ from core.citation_system import format_citations
 from core.intertext_graph import build_intertext_graph
 
 # =========================
-# SAFE VIZ IMPORT (FIXED)
+# SAFE VIZ IMPORT (NO CRASH)
 # =========================
-import viz.graph as vg
-build_graph = vg.build_graph
+try:
+    import viz.graph as vg
+    build_graph = vg.build_graph
+except Exception:
+    build_graph = None
 
 from export.pdf_export import create_thesis_pdf
 
@@ -38,11 +38,11 @@ from export.pdf_export import create_thesis_pdf
 # UI CONFIG
 # =========================
 st.set_page_config(
-    page_title="PoetryGPT - Turkic Literature AI",
+    page_title="PoetryGPT – Turkic Literature AI",
     layout="wide"
 )
 
-st.title("📚 PoetryGPT – Turkic Literature AI System")
+st.title("📚 PoetryGPT – Turkic Literature AI")
 
 
 # =========================
@@ -129,6 +129,7 @@ st.header("📚 Academic RAG System")
 
 query = st.text_input("Ask about Turkic poetry")
 
+
 if st.button("🔎 RAG Search"):
     st.write(rag_answer(query))
 
@@ -140,7 +141,12 @@ if st.button("📚 Literature Review"):
 if st.button("📈 Influence Timeline"):
 
     data = build_timeline()
-    G = build_graph(data)
+
+    if build_graph:
+        G = build_graph(data)
+    else:
+        st.warning("Graph module not available.")
+        st.stop()
 
     fig, ax = plt.subplots(figsize=(12, 7))
 
@@ -154,12 +160,10 @@ if st.button("📈 Influence Timeline"):
 # =========================
 # SIDEBAR
 # =========================
-st.sidebar.title("ℹ️ About")
+st.sidebar.title("ℹ️ PoetryGPT AI")
 
 st.sidebar.info(
 """
-PoetryGPT AI System
-
 ✔ RAG Engine  
 ✔ Intertext Graph  
 ✔ Thesis Generator  
