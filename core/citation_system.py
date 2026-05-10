@@ -1,18 +1,8 @@
-def format_citations(poet="Unknown"):
+def format_citation(item):
 
-    citations = [
-        "Digital Humanities Quarterly (2024)",
-        "Journal of Turkic Literature (2023)",
-        "Comparative Poetics Review (2022)",
-        "Middle Eastern Literary Studies (2023)"
-    ]
-
-    formatted = "\n".join([f"- {c}" for c in citations])
-
-    return f"""
-Author: {poet}
-Style: APA 7th Edition
-
-References:
-{formatted}
-"""
+    return {
+        "title": item.get("title", ""),
+        "doi": item.get("DOI", ""),
+        "year": item.get("year", ""),
+        "style": "APA 7"
+    }
