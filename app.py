@@ -5,18 +5,18 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 # =========================
-# PATH FIX
+# PATH FIX (IMPORT SAFE)
 # =========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
 
 # =========================
-# CORE IMPORTS (SAFE)
+# CORE IMPORTS
 # =========================
 from core.llm_engine import ask_gpt
 from core.prompt_engine import build_prompt
-from core.rag_engine import rag_answer
 
+from core.rag_engine import rag_answer
 from core.alignment_engine import align_poetry
 from core.foundation_model import analyze_poem_multilingual
 
@@ -30,29 +30,67 @@ from export.pdf_export import create_thesis_pdf
 
 
 # =========================
-# UI
+# STREAMLIT CONFIG
 # =========================
 st.set_page_config(page_title="Turkic Literature AI v3", layout="wide")
 st.title("📚 Turkic Literature Foundation AI (Research Engine v3)")
 
 
 # =========================
-# INPUT
+# SESSION STATE INIT
 # =========================
-poem = st.text_area("📜 Şiir / Metin (Azerice - Farsça - Türkçe)")
+if "poem" not in st.session_state:
+    st.session_state.poem = ""
 
-query = st.text_input("🔍 Akademik araştırma sorusu")
+if "query" not in st.session_state:
+    st.session_state.query = ""
 
 
 # =========================
-# 1. FOUNDATION ANALYSIS
+# INPUT AREA (STABLE)
 # =========================
-if st.button("🧠 Foundation Model Analysis"):
+st.subheader("📜 Şiir Girişi")
 
-    result = analyze_poem_multilingual(poem)
+text_input = st.text_area(
+    "Şiir yapıştır (Azerice / Farsça / Türkçe)",
+    value=st.session_state.poem,
+    height=200
+)
 
-    st.subheader("📖 Multilingual Academic Analysis")
-    st.write(result)
+st.session_state.poem = text_input
+poem = st.session_state.poem
+
+
+# =========================
+# FILE UPLOAD (SAFE)
+# =========================
+uploaded_file = st.file_uploader("📂 TXT dosya yükle", type=["txt"])
+
+if uploaded_file is not None:
+    content = uploaded_file.read().decode("utf-8")
+    st.session_state.poem = content
+    st.success("Dosya başarıyla yüklendi")
+
+
+# =========================
+# QUERY INPUT
+# =========================
+query_input = st.text_input("🔍 Akademik soru", value=st.session_state.query)
+st.session_state.query = query_input
+query = st.session_state.query
+
+
+# =========================
+# 1. FOUNDATION MODEL
+# =========================
+if st.button("🧠 Foundation Analysis"):
+
+    if not poem.strip():
+        st.warning("Şiir girilmedi")
+    else:
+        result = analyze_poem_multilingual(poem)
+        st.subheader("📖 Akademik Analiz")
+        st.write(result)
 
 
 # =========================
@@ -60,10 +98,12 @@ if st.button("🧠 Foundation Model Analysis"):
 # =========================
 if st.button("🔗 Alignment Engine"):
 
-    result = align_poetry(poem)
-
-    st.subheader("🌐 Language Alignment")
-    st.write(result)
+    if not poem.strip():
+        st.warning("Şiir girilmedi")
+    else:
+        result = align_poetry(poem)
+        st.subheader("🌐 Dilsel Hizalama")
+        st.write(result)
 
 
 # =========================
@@ -71,10 +111,12 @@ if st.button("🔗 Alignment Engine"):
 # =========================
 if st.button("📚 RAG (CrossRef Real Sources)"):
 
-    results = rag_answer(query)
-
-    st.subheader("📡 Real Academic Sources (CrossRef)")
-    st.write(results)
+    if not query.strip():
+        st.warning("Soru girilmedi")
+    else:
+        result = rag_answer(query)
+        st.subheader("📡 Gerçek Akademik Kaynaklar")
+        st.write(result)
 
 
 # =========================
@@ -82,10 +124,12 @@ if st.button("📚 RAG (CrossRef Real Sources)"):
 # =========================
 if st.button("✔ Citation Verification"):
 
-    result = verify_citations(query)
-
-    st.subheader("🧾 Verified APA References")
-    st.write(result)
+    if not query.strip():
+        st.warning("Soru girilmedi")
+    else:
+        result = verify_citations(query)
+        st.subheader("🧾 Doğrulanmış Kaynaklar")
+        st.write(result)
 
 
 # =========================
@@ -93,11 +137,11 @@ if st.button("✔ Citation Verification"):
 # =========================
 if st.button("🌐 Intertext Graph"):
 
-    G = build_intertext_graph(poem)
-
-    if len(G.nodes) == 0:
-        st.warning("No intertext connections found")
+    if not poem.strip():
+        st.warning("Şiir girilmedi")
     else:
+        G = build_intertext_graph(poem)
+
         fig, ax = plt.subplots(figsize=(10, 6))
         nx.draw(G, with_labels=True, node_size=2500)
         st.pyplot(fig)
@@ -122,42 +166,47 @@ if st.button("🧬 Influence Network"):
 
 
 # =========================
-# 7. PDF EXPORT (ACADEMIC PAPER)
+# 7. PDF EXPORT (ACADEMIC THESIS)
 # =========================
 if st.button("📄 Generate Thesis PDF"):
 
-    analysis = ask_gpt(build_prompt(poem, "thesis"))
-    citations = verify_citations(query)
+    if not poem.strip():
+        st.warning("Şiir girilmedi")
+    else:
+        analysis = ask_gpt(build_prompt(poem))
+        citations = verify_citations(query)
 
-    pdf_path = create_thesis_pdf(
-        poem=poem,
-        analysis=analysis,
-        citations=citations
-    )
-
-    with open(pdf_path, "rb") as f:
-        st.download_button(
-            "⬇ Download Academic Paper",
-            f,
-            file_name="turkic_thesis.pdf"
+        pdf_path = create_thesis_pdf(
+            poem=poem,
+            analysis=analysis,
+            citations=citations
         )
 
+        with open(pdf_path, "rb") as f:
+            st.download_button(
+                "⬇ PDF İndir",
+                f,
+                file_name="turkic_thesis.pdf"
+            )
+
 
 # =========================
-# SIDEBAR
+# SIDEBAR STATUS
 # =========================
-st.sidebar.title("System Status")
+st.sidebar.title("🔬 System Status")
 
 st.sidebar.write("LLM:", "✅")
 st.sidebar.write("CrossRef:", "✅")
-st.sidebar.write("RAG:", "✅")
+st.sidebar.write("Alignment:", "✅")
 st.sidebar.write("Graph:", "✅")
+st.sidebar.write("PDF:", "✅")
 
 st.sidebar.info("""
 Turkic Literature AI v3
-- Foundation Model Layer
-- Multilingual Alignment
-- Real Citation System
-- Knowledge Graph
-- Academic PDF Export
+
+✔ Multilingual Foundation Model  
+✔ CrossRef Verified Citations  
+✔ Intertext Graph Engine  
+✔ Influence Network  
+✔ Academic PDF Generator  
 """)
