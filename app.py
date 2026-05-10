@@ -1,16 +1,14 @@
 import os
 import sys
+import streamlit as st
 
 # =========================
 # 🔧 PATH FIX (CRITICAL)
 # =========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
-
-# bazı Streamlit deploylarında gerekli fallback
 sys.path.insert(0, os.path.abspath(os.path.join(BASE_DIR, "..")))
 
-import streamlit as st
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -28,7 +26,7 @@ from core.intertext_graph import build_intertext_graph
 from export.pdf_export import create_thesis_pdf
 
 # =========================
-# SAFE VIZ IMPORT (NO CRASH)
+# SAFE VIZ IMPORT
 # =========================
 try:
     import viz.graph as vg
@@ -40,16 +38,12 @@ except Exception:
 # =========================
 # UI
 # =========================
-st.set_page_config(
-    page_title="PoetryGPT AI",
-    layout="wide"
-)
-
+st.set_page_config(page_title="PoetryGPT", layout="wide")
 st.title("📚 PoetryGPT – Turkic Literature AI")
 
 
 # =========================
-# INPUT MODE
+# INPUT
 # =========================
 mode = st.radio("Input Mode", ["✍️ Paste Text", "📄 Upload File"])
 
@@ -59,33 +53,23 @@ if mode == "✍️ Paste Text":
     poem = st.text_area("Enter poem", height=250)
 
 elif mode == "📄 Upload File":
-    file = st.file_uploader("Upload TXT file", type=["txt"])
-
+    file = st.file_uploader("Upload TXT", type=["txt"])
     if file:
         poem = file.read().decode("utf-8")
-        st.text_area("Loaded Poem", poem, height=250)
+        st.text_area("Loaded", poem, height=250)
+
+
+analysis_mode = st.selectbox("Analysis Type", ["academic", "intertextuality", "thesis"])
 
 
 # =========================
-# ANALYSIS MODE
+# ANALYSIS
 # =========================
-analysis_mode = st.selectbox(
-    "Analysis Type",
-    ["academic", "intertextuality", "thesis"]
-)
-
-
-# =========================
-# ANALYZE
-# =========================
-if st.button("🚀 Analyze Poem"):
+if st.button("🚀 Analyze"):
 
     if not poem.strip():
-        st.warning("Please provide a poem.")
+        st.warning("No input")
         st.stop()
-
-    st.subheader("📖 Input")
-    st.write(poem)
 
     prompt = build_prompt(poem, analysis_mode)
     result = ask_gpt(prompt)
@@ -94,93 +78,70 @@ if st.button("🚀 Analyze Poem"):
     st.write(result)
 
     st.subheader("📚 Citations")
-    st.text(format_citations("Anonymous"))
+    st.text(format_citations())
 
 
 # =========================
-# INTERTEXT GRAPH
+# GRAPH
 # =========================
-if st.button("🌐 Intertext Graph"):
+if st.button("🌐 Graph"):
 
     G = build_intertext_graph(poem)
 
     if len(G.nodes) == 0:
-        st.warning("No intertextual connections found.")
+        st.warning("No relations found")
     else:
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots()
         pos = nx.spring_layout(G, seed=42)
-
         nx.draw(G, pos, with_labels=True, node_size=2500)
         st.pyplot(fig)
 
 
 # =========================
-# THESIS PDF
+# PDF EXPORT
 # =========================
-if st.button("📄 Generate Thesis PDF"):
-
-    if not poem.strip():
-        st.warning("No poem provided")
-        st.stop()
+if st.button("📄 Thesis PDF"):
 
     analysis = ask_gpt(build_prompt(poem, "thesis"))
 
-    pdf_file = create_thesis_pdf(
+    pdf = create_thesis_pdf(
         poem=poem,
         analysis=analysis,
-        citations=format_citations("Anonymous")
+        citations=format_citations()
     )
 
-    with open(pdf_file, "rb") as f:
-        st.download_button(
-            "⬇ Download Thesis PDF",
-            f,
-            file_name="poetry_thesis.pdf"
-        )
+    with open(pdf, "rb") as f:
+        st.download_button("Download PDF", f, file_name="thesis.pdf")
 
 
 # =========================
-# RAG SYSTEM
+# RAG
 # =========================
 st.divider()
-st.header("📚 Academic RAG")
+st.header("📚 RAG SYSTEM")
 
-query = st.text_input("Ask about Turkic poetry")
+query = st.text_input("Ask question")
 
-if st.button("🔎 RAG Search"):
+if st.button("Search RAG"):
     st.write(rag_answer(query))
 
-if st.button("📚 Literature Review"):
+if st.button("Literature Review"):
     st.write(generate_review(query))
 
-if st.button("📈 Influence Timeline"):
-
+if st.button("Timeline"):
     data = build_timeline()
 
     if build_graph:
         G = build_graph(data)
+        fig, ax = plt.subplots()
+        nx.draw(G, with_labels=True)
+        st.pyplot(fig)
     else:
-        st.warning("Graph module not available")
-        st.stop()
-
-    fig, ax = plt.subplots(figsize=(12, 7))
-    pos = nx.spring_layout(G, seed=42)
-
-    nx.draw(G, pos, with_labels=True, node_size=2500)
-    st.pyplot(fig)
+        st.warning("Graph module missing")
 
 
 # =========================
 # SIDEBAR
 # =========================
-st.sidebar.title("PoetryGPT System")
-
-st.sidebar.info(
-"""
-✔ Paste / Upload poems  
-✔ AI analysis engine  
-✔ RAG system  
-✔ Intertext graph  
-✔ Thesis PDF generator  
-"""
-)
+st.sidebar.title("PoetryGPT")
+st.sidebar.info("AI Poetry + RAG + Graph + Thesis System")
