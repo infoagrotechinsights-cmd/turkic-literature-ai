@@ -1,83 +1,28 @@
-# core/intertext.py
+def find_intertext(text: str):
 
-INTERTEXT_DB = {
+    text = text.lower()
 
-    "baykuş": {
-        "tradition": "Divan Şiiri",
-        "meaning": "Harabe, yalnızlık, terk edilmişlik",
-        "related_authors": [
-            "Fuzuli",
-            "Baki",
-            "Şeyh Galib"
-        ],
-        "theory": "Bakhtin - Polyphony",
-        "academic_note":
-            "Baykuş imgesi klasik Türk şiirinde virane ve yalnızlık metaforu olarak kullanılmıştır."
-    },
+    motifs = []
 
-    "nur": {
-        "tradition": "Tasavvuf Şiiri",
-        "meaning": "İlahi hakikat, vahdet, metafizik aydınlanma",
-        "related_authors": [
-            "Yunus Emre",
-            "Mevlana",
-            "İbn Arabi"
-        ],
-        "theory": "Tasavvufi Metinlerarasılık",
-        "academic_note":
-            "Nur kavramı Türk-İslam düşüncesinde ilahi hakikatin sembolüdür."
-    },
-
-    "kapı": {
-        "tradition": "Ontolojik Eşik Metaforu",
-        "meaning": "Geçiş, sınır, eşik",
-        "related_authors": [
-            "Heidegger",
-            "Bachelard"
-        ],
-        "theory": "Mekan Poetikası",
-        "academic_note":
-            "Kapı imgesi fiziksel değil ontolojik geçiş alanı olarak yorumlanabilir."
-    },
-
-    "sarp": {
-        "tradition": "Türk Dünyası Şiiri",
-        "meaning": "Sınır, ayrılık, kültürel bölünmüşlük",
-        "related_authors": [
-            "Bahtiyar Vahapzade",
-            "Zelimhan Yakup"
-        ],
-        "theory": "Postkolonyal Türk Dünyası Okuması",
-        "academic_note":
-            "Sarp sınırı Türk dünyasının parçalanmış hafızasının metaforu olarak okunabilir."
+    lexicon = {
+        "nur": ("tasavvuf motifi", 0.9),
+        "qapı": ("sınır metaforu", 0.85),
+        "kapı": ("sınır metaforu", 0.85),
+        "bayquş": ("yalnızlık sembolü", 0.8),
+        "baykuş": ("yalnızlık sembolü", 0.8),
+        "darlığa": ("ontolojik sıkışma", 0.75),
+        "yer": ("kozmik mekan", 0.6),
+        "göy": ("kozmik üst dünya", 0.6)
     }
-}
 
+    for key, (typ, weight) in lexicon.items():
 
-def find_intertext(poem: str):
+        if key in text:
 
-    poem_lower = poem.lower()
-
-    findings = []
-
-    for keyword, data in INTERTEXT_DB.items():
-
-        if keyword in poem_lower:
-
-            findings.append({
-
-                "keyword": keyword,
-
-                "tradition": data["tradition"],
-
-                "meaning": data["meaning"],
-
-                "related_authors": data["related_authors"],
-
-                "theory": data["theory"],
-
-                "academic_note": data["academic_note"]
-
+            motifs.append({
+                "term": key,
+                "type": typ,
+                "weight": weight
             })
 
-    return findings
+    return motifs
