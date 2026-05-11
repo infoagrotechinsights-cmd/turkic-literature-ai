@@ -1,26 +1,51 @@
 from core.foundation_model import foundation_reasoning
 
+# optional modules (SAFE IMPORTS)
+try:
+    from core.rag_engine import retrieve_context
+except Exception:
+    def retrieve_context(text):
+        return {"context": [], "mode": "disabled"}
 
-class Orchestrator:
+try:
+    from core.intertext import find_intertext
+except Exception:
+    def find_intertext(text):
+        return []
 
-    def __init__(self):
-        pass
+def run_pipeline(poem: str):
 
-    def run(self, poem: str):
+    # =========================
+    # 1. FOUNDATION LAYER
+    # =========================
+    foundation = foundation_reasoning(poem)
 
-        if not poem or not isinstance(poem, str):
-            return {
-                "error": "Invalid input"
-            }
+    # =========================
+    # 2. RAG LAYER
+    # =========================
+    rag = retrieve_context(poem)
 
-        # =========================
-        # SINGLE SOURCE OF TRUTH
-        # =========================
-        foundation = foundation_reasoning(poem)
+    # =========================
+    # 3. INTERTEXT LAYER
+    # =========================
+    intertext = find_intertext(poem)
 
-        return {
-            "intertext": foundation.get("intertext", []),
-            "alignment": foundation.get("alignment", {}),
-            "motifs": foundation.get("motifs", []),
-            "citations": foundation.get("citations", [])
-        }
+    # =========================
+    # 4. MOTIF NORMALIZATION
+    # =========================
+    motifs = foundation.get("motifs", [])
+
+    if not isinstance(motifs, list):
+        motifs = []
+
+    # =========================
+    # 5. FINAL SAFE OUTPUT
+    # =========================
+    return {
+        "alignment": foundation.get("alignment", []),
+        "intertext": intertext,
+        "rag_context": rag,
+        "motifs": motifs,
+        "citations": foundation.get("citations", []),
+        "knowledge_graph": foundation.get("knowledge_graph", None)
+    }
