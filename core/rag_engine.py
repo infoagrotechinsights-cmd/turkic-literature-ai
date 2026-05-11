@@ -2,12 +2,14 @@ from core.vector_db import VectorDB
 
 db = VectorDB()
 
-db.add("Kristeva intertextuality is mosaic of quotations")
-db.add("Bakhtin dialogism defines meaning through interaction")
-db.add("Postcolonial borders shape identity fragmentation")
-db.add("Sufism uses light (nur) as divine metaphor")
+db.add("Kristeva metinlerarasılığı alıntılar mozaiği olarak açıklar")
+db.add("Bakhtin söylem teorisi diyalojik yapı üzerine kuruludur")
+db.add("Postkolonyal teori sınır ve kimlik krizini analiz eder")
+db.add("Tasavvufta nur ilahi hakikatin sembolüdür")
 
 
 def retrieve_academic_context(text: str):
 
-    return db.search(text, top_k=3)
+    results = db.search(text, top_k=3)
+
+    return sorted(results, key=lambda x: x["score"], reverse=True)
