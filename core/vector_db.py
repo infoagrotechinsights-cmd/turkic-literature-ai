@@ -1,78 +1,40 @@
-# core/vector_db.py
-
-import math
+import numpy as np
+from core.embeddings import embed_text
 
 
 class VectorDB:
 
     def __init__(self):
-
-        self.documents = []
         self.vectors = []
+        self.docs = []
 
-    # -------------------------
-    # SIMPLE EMBEDDING
-    # -------------------------
+    def add(self, text: str, metadata=None):
 
-    def embed(self, text: str):
-
-        # deterministic pseudo embedding (production-ready later swap)
-        return [hash(word) % 1000 for word in text.lower().split()]
-
-    # -------------------------
-    # COSINE SIMILARITY
-    # -------------------------
-
-    def cosine(self, a, b):
-
-        dot = sum(x * y for x, y in zip(a, b))
-        norm_a = math.sqrt(sum(x * x for x in a))
-        norm_b = math.sqrt(sum(y * y for y in b))
-
-        if norm_a == 0 or norm_b == 0:
-            return 0
-
-        return dot / (norm_a * norm_b)
-
-    # -------------------------
-    # ADD DOCUMENT
-    # -------------------------
-
-    def add_document(self, text: str, metadata=None):
-
-        vec = self.embed(text)
-
-        self.documents.append({
-            "text": text,
-            "metadata": metadata or {}
-        })
+        vec = embed_text(text)
 
         self.vectors.append(vec)
+        self.docs.append({
+            "text": text,
+            "meta": metadata or {}
+        })
 
-    # -------------------------
-    # SEARCH
-    # -------------------------
+    def search(self, query: str, top_k=3):
 
-    def search(self, query: str, top_k=5):
+        if len(self.vectors) == 0:
+            return []
 
-        q_vec = self.embed(query)
+        q = embed_text(query)
 
         scores = []
 
-        for i, vec in enumerate(self.vectors):
+        for i, v in enumerate(self.vectors):
 
-            score = self.cosine(q_vec, vec)
+            sim = np.dot(q, v) / (
+                np.linalg.norm(q) * np.linalg.norm(v)
+            )
 
-            scores.append({
-                "text": self.documents[i]["text"],
-                "metadata": self.documents[i]["metadata"],
-                "score": round(score, 4)
-            })
+            scores.append((sim, self.docs[i]))
 
-        scores = sorted(
-            scores,
-            key=lambda x: x["score"],
-            reverse=True
-        )
+        scores.sort(reverse=True, key=lambda x: x[0])
 
-        return scores[:top_k]
+        return [doc for _, doc in scores[:top_k]]
