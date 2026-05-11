@@ -1,10 +1,8 @@
-def align_poem(poem: str):
-
-    from core.embeddings import embed_text
-
-    emb = embed_text(poem)
+def align_poem(text: str):
 
     return {
-        "embedding": emb,
-        "score": 0.95
+        "language": "turkic",
+        "structure": "quatrain-like",
+        "style": "symbolic-poetic",
+        "confidence": 0.87
     }
