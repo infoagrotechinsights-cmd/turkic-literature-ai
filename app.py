@@ -1,7 +1,7 @@
 import os
 
 # =========================
-# 🔥 STABILITY FIXES
+# 🔥 SYSTEM STABILITY FLAGS
 # =========================
 os.environ["STREAMLIT_WATCHER_TYPE"] = "none"
 os.environ["TRANSFORMERS_NO_TORCHVISION"] = "1"
@@ -10,14 +10,15 @@ os.environ["TRANSFORMERS_NO_TF"] = "1"
 import streamlit as st
 
 # =========================
-# CORE IMPORTS (SAFE)
+# SAFE PIPELINE IMPORT
 # =========================
+run_pipeline = None
+pipeline_error = None
+
 try:
     from api.orchestrator import run_pipeline
 except Exception as e:
-    run_pipeline = None
-    print("Orchestrator load error:", e)
-
+    pipeline_error = str(e)
 
 # =========================
 # UI CONFIG
@@ -28,19 +29,24 @@ st.set_page_config(
 )
 
 st.title("📚 Turkic Literature AI")
-st.subheader("Academic Research Cockpit (Semantic Engine)")
+st.subheader("Semantic Academic Research Cockpit")
+
+# =========================
+# PIPELINE ERROR DISPLAY
+# =========================
+if pipeline_error:
+    st.error("❌ Pipeline Load Error")
+    st.code(pipeline_error)
 
 # =========================
 # INPUT
 # =========================
-poem = st.text_area("📜 Paste poem or literary text", height=200)
-
-run_btn = st.button("Analyze")
+poem = st.text_area("📜 Paste poem or literary text", height=220)
 
 # =========================
-# SAFE EXECUTION WRAPPER
+# SAFE RUN FUNCTION
 # =========================
-def safe_run(poem_text: str):
+def safe_run(text: str):
 
     if run_pipeline is None:
         return {
@@ -48,23 +54,26 @@ def safe_run(poem_text: str):
             "alignment": [],
             "intertext": [],
             "motifs": [],
+            "rag_context": {},
             "citations": []
         }
 
     try:
-        result = run_pipeline(poem_text)
+        result = run_pipeline(text)
 
-        # 🔥 safety normalization (crash prevention)
         if not isinstance(result, dict):
             return {
                 "error": "Invalid pipeline output",
                 "raw": str(result)
             }
 
+        # SAFE DEFAULTS
         result.setdefault("alignment", [])
         result.setdefault("intertext", [])
         result.setdefault("motifs", [])
+        result.setdefault("rag_context", {})
         result.setdefault("citations", [])
+        result.setdefault("knowledge_graph", None)
 
         return result
 
@@ -74,110 +83,100 @@ def safe_run(poem_text: str):
             "alignment": [],
             "intertext": [],
             "motifs": [],
+            "rag_context": {},
             "citations": []
         }
 
-
 # =========================
-# RENDER
+# RUN BUTTON
 # =========================
-if run_btn and poem:
+if st.button("Analyze") and poem:
 
     result = safe_run(poem)
 
     st.markdown("## 📚 Academic Analysis (PhD Level)")
 
-    # -------------------------
-    # ERROR SAFE DISPLAY
-    # -------------------------
-    if "error" in result:
-        st.error(result["error"])
+    # =========================
+    # ERROR BLOCK
+    # =========================
+    if result.get("error"):
+        st.warning("⚠️ Analysis Error")
+        st.code(result["error"])
 
-    # -------------------------
-    # MOTIFS / INTERTEXT
-    # -------------------------
+    # =========================
+    # MOTIFS
+    # =========================
     st.markdown("### 📌 Metinlerarasılık Katmanı")
 
     motifs = result.get("motifs", [])
 
-    if motifs and len(motifs) > 0:
-
+    if motifs:
         for m in motifs:
-            term = m.get("term", "unknown")
-            mtype = m.get("type", "unknown")
-            score = m.get("score", 0.0)
-
-            st.write(f"""
-**{term}** → {mtype} (score: {round(float(score), 3)})
-Metinlerarasılık açısından sembolik/kültürel katman üretir.
-""")
+            st.write(
+                f"**{m.get('term','?')}** → {m.get('type','?')} "
+                f"(score: {m.get('score', 0)})"
+            )
     else:
-        st.info("Motif bulunamadı.")
+        st.info("Motif bulunamadı")
 
-    # -------------------------
+    # =========================
     # INTERTEXT
-    # -------------------------
+    # =========================
     st.markdown("### 🔗 Intertext Relations")
 
     intertext = result.get("intertext", [])
 
     if intertext:
         for i in intertext:
-            st.write(f"- {i.get('term','?')} ({i.get('type','?')})")
+            st.write(i)
     else:
-        st.info("Intertext relation bulunamadı.")
+        st.info("Intertext relation bulunamadı")
 
-    # -------------------------
-    # ALIGNMENT SCORE
-    # -------------------------
+    # =========================
+    # ALIGNMENT
+    # =========================
     st.markdown("### 🧠 Alignment Score")
 
     alignment = result.get("alignment", [])
 
     if alignment:
-        for a in alignment:
-            st.write(f"{a}")
+        st.json(alignment)
     else:
-        st.info("Alignment data yok.")
+        st.info("Alignment data yok")
 
-    # -------------------------
-    # RAG CONTEXT
-    # -------------------------
+    # =========================
+    # RAG
+    # =========================
     st.markdown("### 📖 Academic Context (RAG)")
 
-    rag = result.get("rag_context", None)
-    if rag:
-        st.write(rag)
-    else:
-        st.info("RAG context bulunamadı.")
+    st.json(result.get("rag_context", {}))
 
-    # -------------------------
+    # =========================
     # CITATIONS
-    # -------------------------
+    # =========================
     st.markdown("### 📚 Verified Sources")
 
     citations = result.get("citations", [])
 
     if citations:
-        for c in citations:
-            st.write(c)
+        st.json(citations)
     else:
-        st.info("No verified DOI sources detected.")
+        st.info("No verified DOI sources detected")
 
-    # -------------------------
+    # =========================
     # KNOWLEDGE GRAPH
-    # -------------------------
+    # =========================
     st.markdown("### 🧠 Knowledge Graph")
 
-    kg = result.get("knowledge_graph", None)
+    kg = result.get("knowledge_graph")
 
     if kg:
-        st.write(kg)
+        st.json(kg)
     else:
         st.info("Graph unavailable")
 
-    # -------------------------
-    # EXPORT
-    # -------------------------
-    st.markdown("### 📄 Thesis Export")
-    st.code(str(result), language="json")
+    # =========================
+    # RAW EXPORT
+    # =========================
+    st.markdown("### 📄 Thesis Export (Raw JSON)")
+    st.code(result, language="json")
