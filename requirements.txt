@@ -12,3 +12,4 @@ networkx
 matplotlib
 chromadb
 requests
+sentence-transformers
