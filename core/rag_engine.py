@@ -1,32 +1,27 @@
 def retrieve_context(text: str):
-    """
-    Simple RAG fallback engine (production-safe stub)
-    """
 
-    # şimdilik lightweight semantic context
-    keywords = [
-        "Kristeva",
-        "Bakhtin",
-        "metinlerarasılık",
-        "sembol",
-        "tasavvuf",
-        "modernizm"
-    ]
+    keywords = {
+        "kristeva": "intertextuality theory",
+        "bakhtin": "dialogism",
+        "metinlerarasılık": "literary theory",
+        "sembol": "semiotics",
+        "tasavvuf": "mysticism"
+    }
 
     context = []
 
     lower = text.lower()
 
-    for k in keywords:
-        if k.lower() in lower:
+    for k, v in keywords.items():
+        if k in lower:
             context.append({
-                "source": "internal_knowledge_base",
                 "concept": k,
-                "relevance": 0.75
+                "theory": v,
+                "relevance": 0.8
             })
 
     return {
         "query": text,
         "context": context,
-        "mode": "fallback_rag"
+        "mode": "semantic_stub_rag"
     }
