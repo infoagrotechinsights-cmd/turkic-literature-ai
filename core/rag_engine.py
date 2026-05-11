@@ -1,77 +1,24 @@
 # core/rag_engine.py
 
-from difflib import SequenceMatcher
+from core.vector_db import VectorDB
 
 
-ACADEMIC_CORPUS = [
+db = VectorDB()
 
-    {
-        "title": "Türk Dünyası Şiirinde Sınır Metaforu",
-        "content":
-            "Sınır kavramı modern Türk dünyası şiirinde ontolojik ayrılık ve kültürel parçalanmışlık metaforu olarak kullanılır."
-    },
+# preload corpus
+db.add_document("Sınır metaforu Türk dünyasında kültürel ayrışma temsilidir.",
+                {"type": "theory"})
 
-    {
-        "title": "Tasavvuf Şiirinde Nur İmgesi",
-        "content":
-            "Nur kavramı tasavvuf düşüncesinde ilahi hakikatin görünümü olarak değerlendirilir."
-    },
+db.add_document("Baykuş Divan şiirinde yalnızlık ve harabe sembolüdür.",
+                {"type": "motif"})
 
-    {
-        "title": "Divan Şiirinde Baykuş Motifi",
-        "content":
-            "Baykuş klasik şiirde harabe, yalnızlık ve terk edilmişliğin sembolüdür."
-    },
+db.add_document("Nur tasavvufta ilahi hakikatin sembolüdür.",
+                {"type": "symbol"})
 
-    {
-        "title": "Bakhtin ve Çok Seslilik",
-        "content":
-            "Bakhtin'e göre metinler farklı söylemlerin kesişim alanıdır."
-    },
-
-    {
-        "title": "Kristeva ve Metinlerarasılık",
-        "content":
-            "Kristeva her metni bir alıntılar mozaiği olarak tanımlar."
-    }
-
-]
+db.add_document("Kristeva metni alıntılar mozaiği olarak tanımlar.",
+                {"type": "theory"})
 
 
-def similarity(a, b):
+def retrieve_academic_context(poem: str):
 
-    return SequenceMatcher(
-        None,
-        a.lower(),
-        b.lower()
-    ).ratio()
-
-
-def retrieve_academic_context(poem):
-
-    results = []
-
-    for doc in ACADEMIC_CORPUS:
-
-        score = similarity(
-            poem,
-            doc["content"]
-        )
-
-        if score > 0.10:
-
-            results.append({
-
-                "title": doc["title"],
-                "content": doc["content"],
-                "score": round(score, 3)
-
-            })
-
-    results = sorted(
-        results,
-        key=lambda x: x["score"],
-        reverse=True
-    )
-
-    return results[:5]
+    return db.search(poem, top_k=5)
