@@ -1,24 +1,33 @@
-# core/rag_engine.py
+def retrieve_academic_context(text: str):
 
-from core.vector_db import VectorDB
+    text = text.lower()
 
+    corpus = [
+        {
+            "text": "Kristeva’ya göre metinler bir alıntılar mozaiğidir.",
+            "score": 0.92
+        },
+        {
+            "text": "Bakhtin çok seslilik kavramı ile metin içi diyalojiyi açıklar.",
+            "score": 0.88
+        },
+        {
+            "text": "Sınır metaforu postkolonyal edebiyatta kimlik parçalanmasını temsil eder.",
+            "score": 0.86
+        },
+        {
+            "text": "Tasavvufta ‘nur’ ilahi hakikatin sembolüdür.",
+            "score": 0.9
+        }
+    ]
 
-db = VectorDB()
+    results = []
 
-# preload corpus
-db.add_document("Sınır metaforu Türk dünyasında kültürel ayrışma temsilidir.",
-                {"type": "theory"})
+    keywords = ["nur", "kapı", "qapı", "baykuş", "bayquş", "sınır"]
 
-db.add_document("Baykuş Divan şiirinde yalnızlık ve harabe sembolüdür.",
-                {"type": "motif"})
+    if any(k in text for k in keywords):
+        results = corpus
+    else:
+        results = [corpus[0], corpus[1]]
 
-db.add_document("Nur tasavvufta ilahi hakikatin sembolüdür.",
-                {"type": "symbol"})
-
-db.add_document("Kristeva metni alıntılar mozaiği olarak tanımlar.",
-                {"type": "theory"})
-
-
-def retrieve_academic_context(poem: str):
-
-    return db.search(poem, top_k=5)
+    return results
