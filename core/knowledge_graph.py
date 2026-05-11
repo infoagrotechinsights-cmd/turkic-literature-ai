@@ -1,74 +1,25 @@
-# core/knowledge_graph.py
-
 import networkx as nx
 
+G = nx.Graph()
 
-def build_knowledge_graph(intertexts):
 
-    G = nx.Graph()
+def build_graph(intertext):
 
-    # CENTRAL NODE
-    G.add_node(
-        "Poem",
-        type="main"
-    )
+    G.clear()
 
-    for item in intertexts:
+    for item in intertext:
 
-        keyword = item["keyword"]
+        term = item.get("term")
+        typ = item.get("type")
+        weight = item.get("weight", 0.5)
 
-        theory = item["theory"]
+        if term and typ:
 
-        tradition = item["tradition"]
+            # 🔥 REAL RELATIONSHIP EDGE
+            G.add_edge(term, typ, weight=weight)
 
-        # =====================
-        # MAIN CONNECTIONS
-        # =====================
+    return G
 
-        G.add_node(
-            keyword,
-            type="motif"
-        )
 
-        G.add_edge(
-            "Poem",
-            keyword
-        )
-
-        G.add_node(
-            theory,
-            type="theory"
-        )
-
-        G.add_edge(
-            keyword,
-            theory
-        )
-
-        G.add_node(
-            tradition,
-            type="tradition"
-        )
-
-        G.add_edge(
-            keyword,
-            tradition
-        )
-
-        # =====================
-        # AUTHORS
-        # =====================
-
-        for author in item["related_authors"]:
-
-            G.add_node(
-                author,
-                type="author"
-            )
-
-            G.add_edge(
-                keyword,
-                author
-            )
-
+def get_graph():
     return G
