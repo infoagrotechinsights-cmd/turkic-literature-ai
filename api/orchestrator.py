@@ -1,24 +1,26 @@
 from core.foundation_model import foundation_reasoning
-from core.rag_engine import retrieve_academic_context
-from core.citation_verifier import search_crossref
-from core.intertext import find_intertext
 
 
 class Orchestrator:
 
+    def __init__(self):
+        pass
+
     def run(self, poem: str):
 
-        intertext = find_intertext(poem)
+        if not poem or not isinstance(poem, str):
+            return {
+                "error": "Invalid input"
+            }
 
-        foundation = foundation_reasoning(poem, intertext)
-
-        rag = retrieve_academic_context(poem)
-
-        citations = search_crossref(poem)
+        # =========================
+        # SINGLE SOURCE OF TRUTH
+        # =========================
+        foundation = foundation_reasoning(poem)
 
         return {
-            "intertext": intertext,
-            "analysis": foundation,
-            "rag": rag,
-            "citations": citations
+            "intertext": foundation.get("intertext", []),
+            "alignment": foundation.get("alignment", {}),
+            "motifs": foundation.get("motifs", []),
+            "citations": foundation.get("citations", [])
         }
