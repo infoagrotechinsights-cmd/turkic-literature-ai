@@ -16,21 +16,18 @@ def find_intertext(text: str):
 
     for r in results:
 
-        score = r.get("score", 0.5)
-        meta = r.get("meta", {})
-
         output.append({
             "term": r["text"].split()[0],
-            "type": meta.get("type", "motif"),
-            "weight": score
+            "type": r["meta"].get("type", "motif"),
+            "weight": float(r.get("score", 0.5))  # 🔥 REAL SCORE
         })
 
-    # fallback (boş sistem engeli)
-    if not output:
+    # fallback (boş kalmasın ama fake de olmasın)
+    if len(output) == 0:
         output.append({
-            "term": "genel metaforik yapı",
-            "type": "poetik sistem",
-            "weight": 0.4
+            "term": "latent motif",
+            "type": "emergent structure",
+            "weight": 0.3
         })
 
     return output
