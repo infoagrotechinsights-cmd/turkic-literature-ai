@@ -1,34 +1,26 @@
+from core.vector_db import VectorDB
+
+db = VectorDB()
+
+# mini knowledge base
+db.add("nur ilahi ışık ve tasavvuf sembolüdür", {"type": "tasavvuf"})
+db.add("baykuş yalnızlık ve harabe sembolüdür", {"type": "sembol"})
+db.add("kapı sınır ve geçiş metaforudur", {"type": "metafor"})
+db.add("sınır kimlik ve politik ayrım üretir", {"type": "politika"})
+
+
 def find_intertext(text: str):
 
-    text = text.lower()
+    results = db.search(text, top_k=4)
 
-    lexicon = {
-        "nur": ("tasavvuf motifi", 0.9),
-        "qapı": ("sınır metaforu", 0.85),
-        "kapı": ("sınır metaforu", 0.85),
-        "baykuş": ("yalnızlık sembolü", 0.8),
-        "bayquş": ("yalnızlık sembolü", 0.8),
-        "darlığa": ("ontolojik sıkışma", 0.75)
-    }
+    output = []
 
-    results = []
+    for r in results:
 
-    for k, (t, w) in lexicon.items():
-
-        if k in text:
-
-            results.append({
-                "term": k,
-                "type": t,
-                "weight": w
-            })
-
-    # ❗ boş kalmasın (fallback)
-    if not results:
-        results.append({
-            "term": "genel metaforik yapı",
-            "type": "poetik yapı",
-            "weight": 0.5
+        output.append({
+            "term": r["text"].split()[0],
+            "type": r["meta"].get("type", "motif"),
+            "weight": 0.85
         })
 
-    return results
+    return output
