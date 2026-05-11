@@ -2,14 +2,27 @@ from core.vector_db import VectorDB
 
 db = VectorDB()
 
-db.add("Kristeva metinlerarasılığı alıntılar mozaiği olarak açıklar")
-db.add("Bakhtin söylem teorisi diyalojik yapı üzerine kuruludur")
-db.add("Postkolonyal teori sınır ve kimlik krizini analiz eder")
+db.add("Kristeva: metinlerarasılık bir alıntılar mozaiğidir")
+db.add("Bakhtin: anlam diyalojik etkileşimle oluşur")
+db.add("Sınır metaforu postkolonyal kimlik üretir")
 db.add("Tasavvufta nur ilahi hakikatin sembolüdür")
+db.add("Edebiyatta motifler kültürel hafıza üretir")
 
 
 def retrieve_academic_context(text: str):
 
     results = db.search(text, top_k=3)
 
-    return sorted(results, key=lambda x: x["score"], reverse=True)
+    # 🔥 FIX: diversity (aynı şeyleri döndürmesin)
+    seen = set()
+    filtered = []
+
+    for r in results:
+
+        t = r["text"]
+
+        if t not in seen:
+            filtered.append(r)
+            seen.add(t)
+
+    return filtered
