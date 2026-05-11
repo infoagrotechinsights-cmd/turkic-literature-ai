@@ -11,14 +11,11 @@ class VectorDB:
     def add(self, text: str, metadata=None):
         vec = embed_text(text)
         self.vectors.append(vec)
-        self.docs.append({
-            "text": text,
-            "meta": metadata or {}
-        })
+        self.docs.append({"text": text, "meta": metadata or {}})
 
     def search(self, query: str, top_k=3):
 
-        if len(self.vectors) == 0:
+        if not self.vectors:
             return []
 
         q = embed_text(query)
@@ -27,18 +24,23 @@ class VectorDB:
 
         for i, v in enumerate(self.vectors):
 
-            denom = (np.linalg.norm(q) * np.linalg.norm(v)) + 1e-8
+            # 🔥 FIX 1: numerical stability + real cosine
+            denom = (np.linalg.norm(q) * np.linalg.norm(v))
+            if denom == 0:
+                continue
+
             sim = float(np.dot(q, v) / denom)
 
             scores.append((sim, self.docs[i]))
 
+        # 🔥 FIX 2: NO artificial flattening
         scores.sort(key=lambda x: x[0], reverse=True)
 
         return [
             {
                 "text": doc["text"],
                 "meta": doc["meta"],
-                "score": round(score, 4)
+                "score": round(score, 6)
             }
             for score, doc in scores[:top_k]
         ]
