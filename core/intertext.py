@@ -1,15 +1,23 @@
-def find_intertext(poem: str):
+def find_intertext(text: str):
 
-    # placeholder semantic engine (RAG-ready)
-    keywords = ["nur", "baykuş", "kapı", "sınır"]
+    base_terms = [
+        "nur",
+        "baykuş",
+        "kapı",
+        "sınır",
+        "yer",
+        "göy"
+    ]
 
-    relations = []
+    results = []
 
-    for k in keywords:
-        if k in poem.lower():
-            relations.append({
-                "term": k,
-                "type": "intertextual_motif"
+    lower = text.lower()
+
+    for term in base_terms:
+        if term in lower:
+            results.append({
+                "term": term,
+                "type": "intertext_motif"
             })
 
-    return relations
+    return results
