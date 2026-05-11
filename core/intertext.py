@@ -2,11 +2,10 @@ from core.vector_db import VectorDB
 
 db = VectorDB()
 
-# mini knowledge base
 db.add("nur ilahi ışık ve tasavvuf sembolüdür", {"type": "tasavvuf"})
 db.add("baykuş yalnızlık ve harabe sembolüdür", {"type": "sembol"})
 db.add("kapı sınır ve geçiş metaforudur", {"type": "metafor"})
-db.add("sınır kimlik ve politik ayrım üretir", {"type": "politika"})
+db.add("sınır politik ve kimlik ayrımı üretir", {"type": "politika"})
 
 
 def find_intertext(text: str):
@@ -17,10 +16,21 @@ def find_intertext(text: str):
 
     for r in results:
 
+        score = r.get("score", 0.5)
+        meta = r.get("meta", {})
+
         output.append({
             "term": r["text"].split()[0],
-            "type": r["meta"].get("type", "motif"),
-            "weight": 0.85
+            "type": meta.get("type", "motif"),
+            "weight": score
+        })
+
+    # fallback (boş sistem engeli)
+    if not output:
+        output.append({
+            "term": "genel metaforik yapı",
+            "type": "poetik sistem",
+            "weight": 0.4
         })
 
     return output
