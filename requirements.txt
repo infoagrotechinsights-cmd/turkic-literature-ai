@@ -13,3 +13,5 @@ matplotlib
 chromadb
 requests
 sentence-transformers
+torch
+torchvision
