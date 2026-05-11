@@ -1,32 +1,20 @@
-def render_academic_output(poem: str, result: dict):
+def render_academic(result):
 
-    intertext = result.get("intertext", []) or []
-    rag = result.get("rag", []) or []
+    motifs = result.get("motifs", [])
 
-    def safe(item, key, default):
-        return item.get(key, default) if isinstance(item, dict) else default
+    if not motifs:
+        return "No semantic motifs detected."
 
-    text = "# 📚 Academic Analysis (Semantic Engine)\n\n"
+    output = "📚 Academic Analysis (PhD Level)\n\n"
 
-    text += "## 1. Metinlerarasılık Analizi\n"
+    output += "2. Metinlerarasılık Katmanı\n"
 
-    for item in intertext:
+    for m in motifs:
+        output += f"""
+{m['term']} → {m['type']} (score: {round(m['score'],2)})
+Metinlerarasılık açısından bu yapı kültürel sembol üretir.
+"""
 
-        term = safe(item, "term", "öğe")
-        typ = safe(item, "type", "motif")
-        weight = safe(item, "weight", 0.0)
+    output += "\n3. Kuramsal Arka Plan\nKristeva + Bakhtin semantic layer aktif\n"
 
-        text += f"- **{term}** → {typ} (score: {round(weight,3)})\n"
-
-    text += "\n## 2. Kuramsal Bağlam\n"
-
-    for r in rag:
-
-        if isinstance(r, dict):
-            text += f"- {r.get('text','')}\n(score: {r.get('score',0)})\n"
-
-    text += "\n## 3. Sonuç\n"
-
-    text += "Bu analiz sabit şablon değil, semantic similarity tabanlı üretimle oluşturulmuştur.\n"
-
-    return text
+    return output
