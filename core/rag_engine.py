@@ -1,28 +1,32 @@
-from core.vector_db import VectorDB
+def retrieve_context(text: str):
+    """
+    Simple RAG fallback engine (production-safe stub)
+    """
 
-db = VectorDB()
+    # şimdilik lightweight semantic context
+    keywords = [
+        "Kristeva",
+        "Bakhtin",
+        "metinlerarasılık",
+        "sembol",
+        "tasavvuf",
+        "modernizm"
+    ]
 
-db.add("Kristeva: metinlerarasılık bir alıntılar mozaiğidir")
-db.add("Bakhtin: anlam diyalojik etkileşimle oluşur")
-db.add("Sınır metaforu postkolonyal kimlik üretir")
-db.add("Tasavvufta nur ilahi hakikatin sembolüdür")
-db.add("Edebiyatta motifler kültürel hafıza üretir")
+    context = []
 
+    lower = text.lower()
 
-def retrieve_academic_context(text: str):
+    for k in keywords:
+        if k.lower() in lower:
+            context.append({
+                "source": "internal_knowledge_base",
+                "concept": k,
+                "relevance": 0.75
+            })
 
-    results = db.search(text, top_k=3)
-
-    # 🔥 FIX: diversity (aynı şeyleri döndürmesin)
-    seen = set()
-    filtered = []
-
-    for r in results:
-
-        t = r["text"]
-
-        if t not in seen:
-            filtered.append(r)
-            seen.add(t)
-
-    return filtered
+    return {
+        "query": text,
+        "context": context,
+        "mode": "fallback_rag"
+    }
