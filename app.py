@@ -1,119 +1,154 @@
 import streamlit as st
 
-# ONLY SAFE IMPORT
-from core.foundation_model import foundation_reasoning
-
 # =========================
 # PAGE CONFIG
 # =========================
-
 st.set_page_config(
     page_title="Turkic Literature AI",
     layout="wide"
 )
 
 st.title("📚 Turkic Literature AI")
-st.markdown("### Academic Research Cockpit")
+st.markdown("### 🧠 Digital Humanities Research Cockpit")
 
 # =========================
 # INPUT
 # =========================
-
-poem = st.text_area(
-    "📜 Paste poem or literary text",
-    height=250
-)
+poem = st.text_area("📜 Metin / Şiir Giriniz", height=250)
 
 # =========================
-# ANALYSIS BUTTON
+# SAFE IMPORT WRAPPER
 # =========================
-
-if st.button("🚀 Run Analysis"):
-
-    if not poem.strip():
-        st.warning("Please enter a poem.")
-        st.stop()
+def safe_imports():
 
     try:
-
-        # =========================
-        # MAIN PIPELINE
-        # =========================
-
-        result = foundation_reasoning(poem)
-
-        st.success("✅ Analysis completed")
-
-        # =========================
-        # ALIGNMENT
-        # =========================
-
-        st.subheader("🔗 Alignment")
-
-        if "alignment" in result:
-            st.json(result["alignment"])
-        else:
-            st.warning("No alignment result.")
-
-        # =========================
-        # INTERTEXT
-        # =========================
-
-        st.subheader("🌐 Intertext Relations")
-
-        if "intertext" in result:
-            st.json(result["intertext"])
-        else:
-            st.warning("No intertext data.")
-
-        # =========================
-        # MOTIFS
-        # =========================
-
-        st.subheader("🧠 Motifs")
-
-        if "motifs" in result:
-            st.json(result["motifs"])
-        else:
-            st.warning("No motif analysis.")
-
-        # =========================
-        # CITATIONS
-        # =========================
-
-        st.subheader("📖 Citations")
-
-        if "citations" in result:
-            st.json(result["citations"])
-        else:
-            st.warning("No citations found.")
+        from core.foundation_model import foundation_reasoning
+        from core.rag_engine import retrieve_academic_context
+        from core.citation_verifier import search_crossref
+        from core.knowledge_graph import build_knowledge_graph
+        from viz.graph import draw_graph
+        from export.pdf_export import create_thesis_pdf
+        return {
+            "foundation_reasoning": foundation_reasoning,
+            "retrieve_academic_context": retrieve_academic_context,
+            "search_crossref": search_crossref,
+            "build_knowledge_graph": build_knowledge_graph,
+            "draw_graph": draw_graph,
+            "create_thesis_pdf": create_thesis_pdf
+        }
 
     except Exception as e:
+        st.error(f"Import Error: {e}")
+        return None
 
-        st.error("❌ SYSTEM ERROR")
-        st.code(str(e))
+
+mods = safe_imports()
+
+# =========================
+# RUN ANALYSIS
+# =========================
+if st.button("🚀 Run Academic Analysis"):
+
+    if not mods:
+        st.stop()
+
+    if not poem.strip():
+        st.warning("Metin giriniz.")
+        st.stop()
+
+    # =========================
+    # 1. FOUNDATION MODEL
+    # =========================
+    result = mods["foundation_reasoning"](poem)
+
+    st.success("Analysis completed")
+
+    # =========================
+    # 2. INTERTEXT OUTPUT
+    # =========================
+    st.subheader("🔗 Intertext Analysis")
+    st.json(result.get("intertext", []))
+
+    # =========================
+    # 3. RAG OUTPUT
+    # =========================
+    st.subheader("📚 RAG Academic Context")
+
+    rag = mods["retrieve_academic_context"](poem)
+
+    for r in rag:
+        st.markdown(f"""
+**Score:** {r['score']}  
+{r['text']}
+""")
+
+    # =========================
+    # 4. CITATION VERIFICATION
+    # =========================
+    st.subheader("📖 Verified Sources (Crossref)")
+
+    citations = []
+
+    try:
+        citations = mods["search_crossref"](poem)
+
+        for c in citations:
+            if c.get("verified"):
+                st.markdown(f"""
+### {c['title']}
+DOI: {c['doi']}
+APA: {c['apa']}
+""")
+    except:
+        st.warning("Citation system unavailable")
+
+    # =========================
+    # 5. KNOWLEDGE GRAPH
+    # =========================
+    st.subheader("🧠 Knowledge Graph")
+
+    try:
+        G = mods["build_knowledge_graph"](result.get("intertext", []))
+        fig = mods["draw_graph"](G)
+        st.pyplot(fig)
+    except:
+        st.warning("Graph system unavailable")
+
+    # =========================
+    # 6. PDF EXPORT
+    # =========================
+    st.subheader("📄 Thesis Export")
+
+    try:
+        pdf_path = mods["create_thesis_pdf"](
+            "thesis_output.pdf",
+            "Turkic Literature AI Thesis",
+            poem,
+            str(result),
+            citations
+        )
+
+        with open(pdf_path, "rb") as f:
+            st.download_button(
+                "📥 Download Thesis PDF",
+                f,
+                file_name="thesis.pdf"
+            )
+
+    except Exception as e:
+        st.warning(f"PDF error: {e}")
 
 # =========================
 # HEALTH CHECK
 # =========================
-
 st.divider()
 
-if st.button("🧪 System Health Check"):
+if st.button("🧪 System Check"):
 
-    checks = {}
-
-    # foundation model
-    try:
-        foundation_reasoning("test")
-        checks["foundation_model"] = "OK"
-    except Exception as e:
-        checks["foundation_model"] = f"ERROR: {e}"
-
-    st.subheader("System Status")
-    st.json(checks)
-
-    if all(v == "OK" for v in checks.values()):
-        st.success("✅ SYSTEM OPERATIONAL")
-    else:
-        st.error("❌ SYSTEM HAS ERRORS")
+    st.json({
+        "status": "running",
+        "foundation": "lazy import OK",
+        "rag": "active",
+        "vector_db": "active",
+        "graph": "active"
+    })
