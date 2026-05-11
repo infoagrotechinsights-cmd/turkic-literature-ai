@@ -2,27 +2,33 @@ def find_intertext(text: str):
 
     text = text.lower()
 
-    motifs = []
-
     lexicon = {
         "nur": ("tasavvuf motifi", 0.9),
         "qapı": ("sınır metaforu", 0.85),
         "kapı": ("sınır metaforu", 0.85),
-        "bayquş": ("yalnızlık sembolü", 0.8),
         "baykuş": ("yalnızlık sembolü", 0.8),
-        "darlığa": ("ontolojik sıkışma", 0.75),
-        "yer": ("kozmik mekan", 0.6),
-        "göy": ("kozmik üst dünya", 0.6)
+        "bayquş": ("yalnızlık sembolü", 0.8),
+        "darlığa": ("ontolojik sıkışma", 0.75)
     }
 
-    for key, (typ, weight) in lexicon.items():
+    results = []
 
-        if key in text:
+    for k, (t, w) in lexicon.items():
 
-            motifs.append({
-                "term": key,
-                "type": typ,
-                "weight": weight
+        if k in text:
+
+            results.append({
+                "term": k,
+                "type": t,
+                "weight": w
             })
 
-    return motifs
+    # ❗ boş kalmasın (fallback)
+    if not results:
+        results.append({
+            "term": "genel metaforik yapı",
+            "type": "poetik yapı",
+            "weight": 0.5
+        })
+
+    return results
