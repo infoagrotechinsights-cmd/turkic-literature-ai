@@ -9,9 +9,7 @@ class VectorDB:
         self.docs = []
 
     def add(self, text: str, metadata=None):
-
         vec = embed_text(text)
-
         self.vectors.append(vec)
         self.docs.append({
             "text": text,
@@ -29,12 +27,18 @@ class VectorDB:
 
         for i, v in enumerate(self.vectors):
 
-            sim = np.dot(q, v) / (
-                np.linalg.norm(q) * np.linalg.norm(v)
-            )
+            denom = (np.linalg.norm(q) * np.linalg.norm(v)) + 1e-8
+            sim = float(np.dot(q, v) / denom)
 
             scores.append((sim, self.docs[i]))
 
-        scores.sort(reverse=True, key=lambda x: x[0])
+        scores.sort(key=lambda x: x[0], reverse=True)
 
-        return [doc for _, doc in scores[:top_k]]
+        return [
+            {
+                "text": doc["text"],
+                "meta": doc["meta"],
+                "score": round(score, 4)
+            }
+            for score, doc in scores[:top_k]
+        ]
