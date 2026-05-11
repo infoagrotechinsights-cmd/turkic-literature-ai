@@ -1,46 +1,47 @@
-from core.foundation_model import foundation_reasoning
-
-# optional modules (SAFE IMPORTS)
-try:
-    from core.rag_engine import retrieve_context
-except Exception:
-    def retrieve_context(text):
-        return {"context": [], "mode": "disabled"}
-
-try:
-    from core.intertext import find_intertext
-except Exception:
-    def find_intertext(text):
-        return []
-
 def run_pipeline(poem: str):
 
     # =========================
-    # 1. FOUNDATION LAYER
+    # SAFE IMPORT LAYER
     # =========================
-    foundation = foundation_reasoning(poem)
+    try:
+        from core.foundation_model import foundation_reasoning
+    except Exception as e:
+        return {"error": f"foundation_model load failed: {e}"}
+
+    try:
+        from core.rag_engine import retrieve_context
+    except Exception:
+        retrieve_context = lambda x: {"context": [], "mode": "disabled"}
+
+    try:
+        from core.intertext import find_intertext
+    except Exception:
+        find_intertext = lambda x: []
 
     # =========================
-    # 2. RAG LAYER
+    # EXECUTION LAYER
     # =========================
+    try:
+        foundation = foundation_reasoning(poem)
+    except Exception as e:
+        foundation = {
+            "alignment": [],
+            "intertext": [],
+            "motifs": [],
+            "citations": [],
+            "error": str(e)
+        }
+
     rag = retrieve_context(poem)
-
-    # =========================
-    # 3. INTERTEXT LAYER
-    # =========================
     intertext = find_intertext(poem)
 
     # =========================
-    # 4. MOTIF NORMALIZATION
+    # NORMALIZATION LAYER
     # =========================
     motifs = foundation.get("motifs", [])
-
     if not isinstance(motifs, list):
         motifs = []
 
-    # =========================
-    # 5. FINAL SAFE OUTPUT
-    # =========================
     return {
         "alignment": foundation.get("alignment", []),
         "intertext": intertext,
