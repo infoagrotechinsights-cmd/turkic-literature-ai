@@ -1,33 +1,30 @@
 def retrieve_academic_context(text: str):
 
-    text = text.lower()
-
     corpus = [
         {
-            "text": "Kristeva’ya göre metinler bir alıntılar mozaiğidir.",
+            "text": "Kristeva: Metinlerarasılık bir alıntılar mozaiğidir.",
+            "score": 0.95
+        },
+        {
+            "text": "Bakhtin: Her söylem başka söylemlerle diyalog halindedir.",
+            "score": 0.93
+        },
+        {
+            "text": "Sınır metaforu postkolonyal literatürde kimlik krizini temsil eder.",
+            "score": 0.89
+        },
+        {
+            "text": "Tasavvufta 'nur' ilahi hakikatin sembolüdür.",
             "score": 0.92
-        },
-        {
-            "text": "Bakhtin çok seslilik kavramı ile metin içi diyalojiyi açıklar.",
-            "score": 0.88
-        },
-        {
-            "text": "Sınır metaforu postkolonyal edebiyatta kimlik parçalanmasını temsil eder.",
-            "score": 0.86
-        },
-        {
-            "text": "Tasavvufta ‘nur’ ilahi hakikatin sembolüdür.",
-            "score": 0.9
         }
     ]
 
-    results = []
+    text = text.lower()
 
-    keywords = ["nur", "kapı", "qapı", "baykuş", "bayquş", "sınır"]
+    keywords = ["nur", "kapı", "qapı", "baykuş", "sınır", "darlık"]
 
+    # ❗ HER ZAMAN GERİ DÖN (boş kalma yok)
     if any(k in text for k in keywords):
-        results = corpus
+        return corpus
     else:
-        results = [corpus[0], corpus[1]]
-
-    return results
+        return corpus[:2]
