@@ -1,12 +1,11 @@
-from core.embeddings import embed_text
 import numpy as np
 
 MOTIF_DB = {
     "nur": "tasavvuf",
     "kapı": "metafor",
     "baykuş": "yalnızlık",
-    "sınır": "politik sınır",
-    "yer": "kozmik mekan",
+    "sınır": "politik yapı",
+    "yer": "mekan",
     "göy": "kozmoloji"
 }
 
@@ -17,12 +16,10 @@ def align_poem(poem: str):
 
     for w in words:
         if w in MOTIF_DB:
-            score = float(np.clip(len(w)/10, 0.4, 0.95))
-
             result.append({
                 "term": w,
                 "type": MOTIF_DB[w],
-                "score": score
+                "score": float(np.clip(len(w)/10, 0.4, 0.95))
             })
 
     return result
