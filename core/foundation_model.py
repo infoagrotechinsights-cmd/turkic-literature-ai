@@ -1,24 +1,17 @@
 from core.alignment_engine import align_poem
 from core.intertext import find_intertext
+from core.rag_engine import retrieve_academic_context
 
 
 def foundation_reasoning(poem: str):
 
     alignment = align_poem(poem)
     intertext = find_intertext(poem)
-
-    motifs = [
-        {
-            "term": i.get("term", "unknown"),
-            "type": i.get("type", "motif"),
-            "weight": i.get("weight", 0.5)
-        }
-        for i in intertext
-    ]
+    rag = retrieve_academic_context(poem)
 
     return {
         "alignment": alignment,
         "intertext": intertext,
-        "motifs": motifs,
+        "rag": rag,
         "citations": []
     }
