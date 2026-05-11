@@ -8,7 +8,11 @@ def foundation_reasoning(poem: str):
     intertext = find_intertext(poem)
 
     motifs = [
-        {"term": i.get("term"), "type": i.get("type")}
+        {
+            "term": i.get("term", "unknown"),
+            "type": i.get("type", "motif"),
+            "weight": i.get("weight", 0.5)
+        }
         for i in intertext
     ]
 
